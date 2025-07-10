@@ -14,7 +14,7 @@ import { ChefHat, Calendar, ArrowLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { getRecipe, deleteRecipe, analyzeRecipeNutrition } from "@/lib/api/recipes";
+import { getRecipe, deleteRecipe, analyzeRecipeNutrition } from "@/app/api/recipes";
 import { NutritionData, Recipe } from "@/lib/types";
 
 export default function RecipeDetailPage() {
@@ -36,6 +36,7 @@ export default function RecipeDetailPage() {
     const fetchRecipe = async () => {
       try {
         const data = await getRecipe(recipeId);
+        console.log('Fetched recipe:', data);
         setRecipe(data);
       } catch (err) {
         const error = err as Error;

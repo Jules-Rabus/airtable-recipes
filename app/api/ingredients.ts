@@ -1,8 +1,8 @@
 'use server'
 
 import { z } from 'zod'
-import { airtableIngredientRecordSchema, ingredientOptionSchema, IngredientOption } from '@/schemas/api'
-import { getRecords, createRecord } from '../axios'
+import { airtableIngredientRecordSchema, ingredientOptionSchema, IngredientOption } from '@/schemas'
+import { getRecords, createRecord } from '@/lib/axios'
 import { AirtableTables } from '@/constants/airtable'
 
 export const getIngredientOptions = async (): Promise<IngredientOption[]> => {

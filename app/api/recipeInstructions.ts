@@ -1,8 +1,8 @@
 'use server'
 
-import { getRecords, createRecords } from '../axios'
+import { getRecords, createRecords } from '@/lib/axios'
 import { AirtableTables } from '@/constants/airtable'
-import { InstructionRecord } from '../types'
+import { InstructionRecord } from '@/lib/types'
 
 export const fetchRecipeInstructions = async (): Promise<InstructionRecord[]> => {
   const records = await getRecords(AirtableTables.RECIPE_INSTRUCTIONS)

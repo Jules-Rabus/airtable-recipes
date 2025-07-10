@@ -1,14 +1,21 @@
 'use server'
 
-import { z } from 'zod'
-import { recipeCardSchema, RecipeCard } from '@/schemas/api'
-import { getRecords, createRecord, getRecord, deleteRecord } from '../axios'
-import { AirtableTables } from '@/constants/airtable'
-import { generateObject } from 'ai'
-import { mistral } from '@ai-sdk/mistral'
-import { Recipe, NutritionData, IngredientRecord, RecipeRecord, RecipeIngredientRecord, RecipeInstructionRecord } from '../types'
-import { fetchRecipeIngredientJoins, addRecipeIngredientJoins } from './recipeIngredients'
-import { fetchRecipeInstructions, addRecipeInstructions } from './recipeInstructions'
+import {z} from 'zod'
+import {RecipeCard, recipeCardSchema} from '@/schemas'
+import {createRecord, deleteRecord, getRecord, getRecords} from '@/lib/axios'
+import {AirtableTables} from '@/constants/airtable'
+import {generateObject} from 'ai'
+import {mistral} from '@ai-sdk/mistral'
+import {
+  IngredientRecord,
+  NutritionData,
+  Recipe,
+  RecipeIngredientRecord,
+  RecipeInstructionRecord,
+  RecipeRecord
+} from '@/lib/types'
+import {addRecipeIngredientJoins, fetchRecipeIngredientJoins} from '@/app/api/recipeIngredients'
+import {addRecipeInstructions, fetchRecipeInstructions} from "@/app/api/recipeInstructions";
 
 export const generateRecipes = async (payload: { ingredients: { id: string; name: string }[]; intolerances: string[]; serving: number; genre?: string }): Promise<RecipeCard[]> => {
   const { ingredients, intolerances, serving = 1, genre } = payload
@@ -120,31 +127,30 @@ export const getRecipes = async (): Promise<RecipeCard[]> => {
   const ingredientsTable = await getRecords(AirtableTables.INGREDIENTS)
   const ingredientMap = Object.fromEntries((ingredientsTable as IngredientRecord[]).map(ing => [ing.id, ing.fields?.Name || ing.id]))
   const instructionsTable = await fetchRecipeInstructions()
-  const result = (recipes as RecipeRecord[]).map(recipe => {
+  return (recipes as RecipeRecord[]).map(recipe => {
     const recipeIngredients = joinRecords
-      .filter(jr => Array.isArray(jr.fields?.Recipe) && jr.fields.Recipe.includes(recipe.id))
-      .map(jr => {
-        const quantityStr = jr.fields?.Quantity
-        let quantity = 0
-        let unit = ''
-        if (typeof quantityStr === 'number') quantity = quantityStr
-        else if (typeof quantityStr === 'string') {
-          const match = quantityStr.match(/([\d.,]+)\s*(.*)/)
-          if (match) {
-            quantity = parseFloat(match[1].replace(',', '.'))
-            unit = match[2].trim()
+        .filter(jr => Array.isArray(jr.fields?.Recipe) && jr.fields.Recipe.includes(recipe.id))
+        .map(jr => {
+          const quantityStr = jr.fields?.Quantity
+          let quantity = 0
+          let unit = ''
+          if (typeof quantityStr === 'number') quantity = quantityStr
+          else if (typeof quantityStr === 'string') {
+            const match = quantityStr.match(/([\d.,]+)\s*(.*)/)
+            if (match) {
+              quantity = parseFloat(match[1].replace(',', '.'))
+              unit = match[2].trim()
+            }
           }
-        }
-        const ingredientId = Array.isArray(jr.fields?.Ingredient) ? jr.fields.Ingredient[0] : jr.fields?.Ingredient
-        return { id: ingredientId, name: ingredientId ? ingredientMap[ingredientId] || '' : '', quantity, unit }
-      })
+          const ingredientId = Array.isArray(jr.fields?.Ingredient) ? jr.fields.Ingredient[0] : jr.fields?.Ingredient
+          return {id: ingredientId, name: ingredientId ? ingredientMap[ingredientId] || '' : '', quantity, unit}
+        })
     const recipeInstructions = instructionsTable
-      .filter(inst => Array.isArray(inst.fields?.Recipe) && inst.fields.Recipe.includes(recipe.id))
-      .sort((a, b) => (a.fields?.Order || 0) - (b.fields?.Order || 0))
-      .map(inst => ({ text: inst.fields?.Instruction || '', order: inst.fields?.Order || 0 }))
-    return { ...recipe, ingredients: recipeIngredients, instructions: recipeInstructions } as RecipeCard
+        .filter(inst => Array.isArray(inst.fields?.Recipe) && inst.fields.Recipe.includes(recipe.id))
+        .sort((a, b) => (a.fields?.Order || 0) - (b.fields?.Order || 0))
+        .map(inst => ({text: inst.fields?.Instruction || '', order: inst.fields?.Order || 0}))
+    return {...recipe, ingredients: recipeIngredients, instructions: recipeInstructions} as RecipeCard
   })
-  return result
 }
 
 export const getRecipe = async (id: string): Promise<Recipe> => {
@@ -154,6 +160,7 @@ export const getRecipe = async (id: string): Promise<Recipe> => {
   const allIngredients = await getRecords(AirtableTables.INGREDIENTS)
   const ingredientMap = Object.fromEntries((allIngredients as IngredientRecord[]).map(ing => [ing.id, ing.fields?.Name || ing.id]))
   const instructionJoins = await fetchRecipeInstructions()
+  console.log('instructionJoins', instructionJoins)
   const recipeInstructionJoins = instructionJoins.filter(ir => Array.isArray(ir.fields?.Recipe) && ir.fields.Recipe.includes(id))
   const recipeIngredientJoinsWithNames = recipeIngredientJoins.map(join => {
     const ingredientId = Array.isArray(join.fields?.Ingredient) ? join.fields.Ingredient[0] : join.fields?.Ingredient
@@ -197,7 +204,7 @@ export const deleteRecipe = async (recipeId: string): Promise<void> => {
 export const analyzeRecipeNutrition = async (payload: { ingredients: Array<{ name: string; quantity: number; unit: string }>; serving: number; recipeTitle: string }): Promise<NutritionData> => {
   const { ingredients, serving, recipeTitle } = payload
   const ingredientList = ingredients.map(ing => `${ing.name}: ${ing.quantity} ${ing.unit}`).join(', ')
-  const prompt = `Tu es un nutritionniste expert français. Analyse la valeur nutritionnelle de cette recette avec PRÉCISION.
+  const prompt = `Analyse la valeur nutritionnelle de cette recette avec PRÉCISION.
 
     INGRÉDIENTS : ${ingredientList}
     PORTIONS : ${serving} personne(s)
@@ -208,19 +215,9 @@ export const analyzeRecipeNutrition = async (payload: { ingredients: Array<{ nam
     2. Utilise UNIQUEMENT des données nutritionnelles standardisées et vérifiées
     3. Inclus TOUTES les vitamines et minéraux présents (même si 0)
     4. Donne des notes nutritionnelles précises et factuelles en français
-    5. Adapte les quantités proportionnellement au nombre de portions
+    5. Adapte les quantités proportionnellement au nombre de portions`;
 
-    DONNÉES NUTRITIONNELLES DE RÉFÉRENCE (pour 100g) :
-    - Pomme : 52 kcal, 0.3g protéines, 14g glucides, 0.2g lipides, 2.4g fibres
-    - Banane : 89 kcal, 1.1g protéines, 23g glucides, 0.3g lipides, 2.6g fibres
-    - Poulet (blanc) : 165 kcal, 31g protéines, 0g glucides, 3.6g lipides
-    - Riz cuit : 130 kcal, 2.7g protéines, 28g glucides, 0.3g lipides
-    - Tomate : 18 kcal, 0.9g protéines, 3.9g glucides, 0.2g lipides, 1.2g fibres
-    - Fromage (type emmental) : 402 kcal, 28g protéines, 1.3g glucides, 32g lipides
-    - Carotte : 41 kcal, 0.9g protéines, 10g glucides, 0.2g lipides, 2.8g fibres
-    - Citron : 29 kcal, 1.1g protéines, 9g glucides, 0.3g lipides, 2.8g fibres
-    - Persil : 36 kcal, 3g protéines, 6g glucides, 0.8g lipides, 3.3g fibres
-    - Chocolat noir : 546 kcal, 4.9g protéines, 61g glucides, 31g lipides
+  const systemPrompt = `Tu es un expert en nutrition français. Tu dois TOUJOURS répondre en français.
 
     CALCULS REQUIS (avec précision) :
     - Calories totales (kcal) : somme des calories de tous les ingrédients
@@ -240,7 +237,8 @@ export const analyzeRecipeNutrition = async (payload: { ingredients: Array<{ nam
 
   const { object } = await generateObject({
     model: mistral('mistral-medium-latest'),
-    system: prompt,
+    prompt: prompt,
+    system: systemPrompt,
     schema: z.object({
       calories: z.number().min(0).max(5000),
       protein: z.number().min(0).max(200),
@@ -273,7 +271,8 @@ export const analyzeRecipeNutrition = async (payload: { ingredients: Array<{ nam
         manganese: z.number().min(0).max(10).optional(),
         selenium: z.number().min(0).max(200).optional()
       }),
-      nutrition_notes: z.string().min(10).max(500)
+      nutrition_notes: z.string().min(10).max(500),
+      nutrition_score: z.number().min(0).max(5)
     })
   })
 

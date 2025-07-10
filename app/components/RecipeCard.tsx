@@ -8,8 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { RecipeCard as RecipeType } from "@/schemas/api";
-import { saveRecipe, deleteRecipe } from "@/lib/api/recipes";
+import { RecipeCard as RecipeType } from "@/schemas";
+import { saveRecipe, deleteRecipe } from "@/app/api/recipes";
 
 interface RecipeCardProps {
   recipe: RecipeType;
@@ -102,7 +102,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
                 <ChefHat className="w-3 h-3" />
                 {difficulty}
               </Badge>
-              <Badge variant="outline" className="badge-secondary">
+              <Badge variant="secondary" className="badge-secondary">
                 {cuisine}
               </Badge>
             </div>

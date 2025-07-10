@@ -94,6 +94,11 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
             <p className="text-xs text-muted-foreground">
               Valeurs nutritionnelles pour {serving} portion{serving > 1 ? 's' : ''}
             </p>
+            {nutrition.nutrition_score !== undefined && (
+              <p className="text-sm font-medium text-primary">
+                Note nutritionnelle : {nutrition.nutrition_score.toFixed(1)} / 5
+              </p>
+            )}
           </div>
 
           {/* Calories principales */}
@@ -233,6 +238,11 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
             <CardDescription className="text-xs sm:text-sm">
               Valeurs nutritionnelles pour {serving} portion{serving > 1 ? 's' : ''}
             </CardDescription>
+            {nutrition.nutrition_score !== undefined && (
+              <CardDescription className="text-sm">
+                Note nutritionnelle : {nutrition.nutrition_score.toFixed(1)} / 5
+              </CardDescription>
+            )}
           </CardHeader>
           <CardContent className="space-y-4 sm:space-y-6">
             {/* Calories principales */}
@@ -366,4 +376,4 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
       )}
     </>
   );
-} 
+}

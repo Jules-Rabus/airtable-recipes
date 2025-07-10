@@ -71,6 +71,7 @@ export interface NutritionData {
     selenium?: number;
   };
   nutrition_notes?: string;
+  nutrition_score?: number;
 }
 
 export interface RecipeIngredientRecord {
