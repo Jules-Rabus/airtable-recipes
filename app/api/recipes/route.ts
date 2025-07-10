@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { z } from 'zod';
 import { getRecords } from '@/lib/axios';
 import { AirtableTables } from '@/constants/airtable';
-import {MistralAI} from "@langchain/mistralai";
+import {generateObject} from "ai";
+import {mistral} from "@ai-sdk/mistral";
 
 export const runtime = 'edge';
 
@@ -67,7 +67,6 @@ const recipeSchema = z.object({
   servings: z.number().describe("Nombre de portions de la recette. Toujours 1."),
   prep_time_minutes: z.number().describe("Temps de préparation en minutes."),
   cook_time_minutes: z.number().describe("Temps de cuisson en minutes."),
-  // removed missing_ingredients
 });
 const recipesSchema = z.object({
   recipes: z.array(recipeSchema)
@@ -143,26 +142,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Clé API MISTRAL non définie' }, { status: 500 });
     }
 
-    const agent = createReactAgent({
-      llm: new MistralAI({
-        model: 'mistral-medium-latest',
-        temperature: 0.1,
-      }),
-      tools: [],
-      responseFormat: recipesSchema,
-    });
-
-    // Correction : transmettre la liste complète des ingrédients (id, name) et demander d'utiliser exactement ces noms
     const ingredientListJson = JSON.stringify(ingredients);
 
-    const prompt = `Tu es un chef culinaire français expert. Tu dois TOUJOURS répondre en français.
-
-    LANGUE OBLIGATOIRE : Français uniquement
-    - Tous les titres de recettes en français
-    - Toutes les descriptions en français
-    - Toutes les instructions en français
-    - Tous les noms d'ingrédients en français
-
+    const prompt = `
     Crée 3-10 recettes délicieuses en utilisant UNIQUEMENT les ingrédients alimentaires fournis.
 
     NOMBRE DE RECETTES :
@@ -196,6 +178,16 @@ export async function POST(req: Request) {
        - Exemple : si 1 portion = 100g, alors ${servings} portions = ${servings * 100}g
        - Utilise des quantités réalistes et précises pour ${servings} personne(s)
     7. Créativité : Plus il y a d'ingrédients, plus tu peux être créatif et proposer de recettes
+    
+    `;
+
+    const systemPrompt = `Tu es un chef culinaire français expert. Tu dois TOUJOURS répondre en français.
+    
+       LANGUE OBLIGATOIRE : Français uniquement
+    - Tous les titres de recettes en français
+    - Toutes les descriptions en français
+    - Toutes les instructions en français
+    - Tous les noms d'ingrédients en français
 
     FORMAT JSON EXACT ATTENDU :
     {
@@ -244,13 +236,19 @@ export async function POST(req: Request) {
     - TOUT en français (titres, descriptions, instructions)
     - Sans texte supplémentaire`;
 
-    const result = await agent.invoke({
-      messages: [{ type: 'human', content: prompt }]
-    });
+
+      const { object } = await generateObject({
+        model: mistral('mistral-medium-latest'),
+        system: systemPrompt,
+        prompt: prompt,
+        schema: recipesSchema,
+      });
+
 
     // Retourner les recettes sans analyse nutritionnelle automatique
-    return NextResponse.json({ recipes: result.structuredResponse?.recipes || [] });
+    return NextResponse.json({ recipes: object.recipes });
   } catch (error) {
+    console.error('Error generating recipes:', error);
     return NextResponse.json({ error: (error as Error)?.message || 'Erreur inconnue' }, { status: 500 });
   }
 } 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { z } from 'zod';
-import {MistralAI} from "@langchain/mistralai";
+import {generateObject} from "ai";
+import {mistral} from "@ai-sdk/mistral";
 
 export const runtime = 'edge';
 
@@ -53,15 +53,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Clé API MISTRAL non définie' }, { status: 500 });
     }
 
-    const agent = createReactAgent({
-      llm: new MistralAI({
-        model: 'mistral-medium-latest',
-        temperature: 0.1,
-      }),
-      tools: [],
-      responseFormat: nutritionSchema,
-    });
-
     const ingredientsList = ingredients.map((ing: { name: string; quantity: number; unit: string }) => 
       `${ing.name}: ${ing.quantity} ${ing.unit}`
     ).join(', ');
@@ -107,12 +98,15 @@ export async function POST(req: Request) {
 
     Réponds UNIQUEMENT en JSON valide, sans texte supplémentaire.`;
 
-    const result = await agent.invoke({
-      messages: [{ type: 'human', content: prompt }]
+    const { object } = await generateObject({
+      model: mistral('mistral-medium-latest'),
+      system: prompt,
+      schema: nutritionSchema,
     });
 
-    return NextResponse.json(result.structuredResponse);
+    return NextResponse.json(object);
   } catch (error) {
+    console.log('Erreur lors de l\'analyse nutritionnelle:', error);
     return NextResponse.json({ error: (error as Error)?.message || 'Erreur inconnue' }, { status: 500 });
   }
 } 

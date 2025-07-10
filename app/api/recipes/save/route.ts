@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createRecord, createRecords } from '@/lib/axios';
 import { AirtableTables } from '@/constants/airtable';
+import { RecipeType } from "@/schemas/recipe";
 
 export async function POST(req: Request) {
   try {
-    const { recipe } = await req.json();
+    const { recipe }: { recipe: RecipeType } = await req.json();
     
     if (!recipe) {
       return NextResponse.json({ error: 'Recipe is required' }, { status: 400 });
@@ -14,8 +15,8 @@ export async function POST(req: Request) {
       Title: recipe.title,
       Description: recipe.description,
       Servings: recipe.servings,
-      PrepTimeMinutes: recipe.prep_time_minutes,
-      CookTimeMinutes: recipe.cook_time_minutes,
+      PreparationTime: recipe.preparationTime,
+      CookingTime: recipe.cookingTime,
     };
     const created = await createRecord(AirtableTables.RECIPES, fields);
 
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
       }
       if (joinRecords.length > 0) {
         try {
-          const joinResult = await createRecords(AirtableTables.RECIPE_INGREDIENT_QUANTITY, joinRecords);
+          await createRecords(AirtableTables.RECIPE_INGREDIENT_QUANTITY, joinRecords);
         } catch (err) {
           console.error('Error creating join records:', err, joinRecords);
           return NextResponse.json({ error: 'Failed to save recipe ingredients', details: err }, { status: 500 });

@@ -114,19 +114,19 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
             
             {/* Recipe metadata */}
             <div className="flex flex-wrap gap-2 mb-4">
-              <Badge variant="secondary" className="badge-secondary flex items-center gap-1 text-xs">
+              <Badge variant="secondary" className="badge-secondary">
                 <Clock className="w-3 h-3" />
                 {prepTime + cookTime} min
               </Badge>
-              <Badge variant="secondary" className="badge-secondary flex items-center gap-1 text-xs">
+              <Badge variant="secondary" className="badge-secondary">
                 <Users className="w-3 h-3" />
                 {servings} portion{servings > 1 ? 's' : ''}
               </Badge>
-              <Badge variant="secondary" className="badge-secondary flex items-center gap-1 text-xs">
+              <Badge variant="secondary" className="badge-secondary">
                 <ChefHat className="w-3 h-3" />
                 {difficulty}
               </Badge>
-              <Badge variant="outline" className="badge-primary text-xs">
+              <Badge variant="outline" className="badge-secondary">
                 {cuisine}
               </Badge>
             </div>
@@ -183,7 +183,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
               variant="ghost"
               className="btn-ghost flex-1 sm:flex-none"
             >
-              {isExpanded ? "👁️ Masquer" : "👁️ Voir détails"}
+              {isExpanded ? "👁️ Masquer" : "👁️ Voir les détails"}
             </Button>
           </div>
         </div>
