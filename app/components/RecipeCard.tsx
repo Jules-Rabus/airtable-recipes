@@ -60,7 +60,6 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
 
       if (response.ok) {
         toast.success("Recette sauvegardée avec succès !");
-        // Appeler le callback pour supprimer la recette de la liste
         if (onRecipeSaved) {
           onRecipeSaved();
         }
@@ -112,7 +111,6 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
               {description}
             </CardDescription>
             
-            {/* Recipe metadata */}
             <div className="flex flex-wrap gap-2 mb-4">
               <Badge variant="secondary" className="badge-secondary">
                 <Clock className="w-3 h-3" />
@@ -203,7 +201,6 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
         <CardContent className="pt-0 fade-in-up">
           <Separator className="mb-6 sm:mb-8" />
           
-          {/* Ingredients Section */}
           <div className="space-y-4 sm:space-y-6">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gradient-to-r from-green-100 to-emerald-100">
@@ -237,7 +234,6 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
 
           <Separator className="my-6 sm:my-8" />
 
-          {/* Instructions Section */}
           <div className="space-y-4 sm:space-y-6">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-100 to-indigo-100">
@@ -267,7 +263,6 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
             </div>
           </div>
 
-          {/* Action Buttons */}
           {showSaveButton && (
             <div className="flex gap-3 sm:gap-4 mt-6 sm:mt-8 pt-6 sm:pt-8 border-t">
               <Button 
@@ -307,7 +302,6 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
                       {description}
                     </CardDescription>
                     
-                    {/* Recipe metadata */}
                     <div className="flex flex-wrap gap-2 mb-3">
                       <Badge variant="secondary" className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -332,7 +326,6 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
           </div>
         </Link>
         
-        {/* Boutons d'action en position absolue */}
         <div className="absolute top-4 right-4 flex flex-col gap-2">
           {showSaveButton && (
             <Button
@@ -398,13 +391,11 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
           </Button>
         </div>
 
-        {/* Section détaillée si expandée */}
         {isExpanded && (
           <Card className="modern-card mt-4">
             <CardContent className="pt-6">
               <Separator className="mb-6" />
-              
-              {/* Ingredients Section */}
+
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🥕</span>
@@ -436,7 +427,6 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
 
               <Separator className="my-6" />
 
-              {/* Instructions Section */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">📝</span>
@@ -464,7 +454,6 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
                 </div>
               </div>
 
-              {/* Action Buttons */}
               {showSaveButton && (
                 <div className="flex gap-3 mt-6 pt-6 border-t">
                   <Button 

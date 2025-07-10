@@ -132,7 +132,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { ingredients, intolerances, servings = 1 } = await req.json();
+    const { ingredients, intolerances, servings = 1, genre } = await req.json();
     if (!Array.isArray(ingredients) || ingredients.length === 0) {
       return NextResponse.json({ error: 'Les ingrédients sont requis' }, { status: 400 });
     }
@@ -143,9 +143,9 @@ export async function POST(req: Request) {
     }
 
     const ingredientListJson = JSON.stringify(ingredients);
-
+    const typeInfo = genre ? ` de type ${genre}` : '';
     const prompt = `
-    Crée 3-10 recettes délicieuses en utilisant UNIQUEMENT les ingrédients alimentaires fournis.
+    Crée 3-10 recettes délicieuses${typeInfo} en utilisant UNIQUEMENT les ingrédients alimentaires fournis.
 
     NOMBRE DE RECETTES :
     - Génère 3 recettes minimum
@@ -243,9 +243,6 @@ export async function POST(req: Request) {
         prompt: prompt,
         schema: recipesSchema,
       });
-
-
-    // Retourner les recettes sans analyse nutritionnelle automatique
     return NextResponse.json({ recipes: object.recipes });
   } catch (error) {
     console.error('Error generating recipes:', error);

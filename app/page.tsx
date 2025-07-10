@@ -98,7 +98,6 @@ export default function Home() {
     setProgress(0);
     setProgressMessage("Initialisation de l'IA...");
 
-    // Very smooth progress simulation for 10-20 second generation
     const progressSteps = [
       { targetProgress: 8, message: "Analyse des ingrédients...", duration: 2000 },
       { targetProgress: 20, message: "Création des combinaisons culinaires...", duration: 4000 },
@@ -121,7 +120,6 @@ export default function Home() {
         const stepElapsed = now - stepStartTime;
         const stepProgress = Math.min(stepElapsed / step.duration, 1);
         
-        // Smooth easing function for natural progression
         const easedProgress = stepProgress * stepProgress * (3 - 2 * stepProgress);
         const currentStepProgress = stepStartProgress + (step.targetProgress - stepStartProgress) * easedProgress;
         
@@ -134,7 +132,7 @@ export default function Home() {
           stepStartProgress = step.targetProgress;
         }
       }
-    }, 50); // Update every 50ms for very smooth animation
+    }, 50);
 
     try {
       const selectedIngredientObjects = selectedIngredients.map(id => {
@@ -164,10 +162,8 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <Navigation />
 
-      {/* Main Content */}
       <main className="container-modern section-padding">
         <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12">
-          {/* Hero Section */}
           <div className="text-center space-y-6 sm:space-y-8 fade-in-up">
             <div className="space-y-3 sm:space-y-4">
               <h1 className="heading-xl gradient-text px-4">
@@ -180,7 +176,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Form Section */}
           <div className="scale-in">
             <Card className="modern-card max-w-4xl mx-auto">
               <CardHeader className="text-center pb-6 sm:pb-8">
@@ -195,7 +190,6 @@ export default function Home() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 sm:space-y-8">
-                {/* Ingredients Selection */}
                 <div className="space-y-3">
                   <Label htmlFor="ingredients" className="text-base font-semibold text-slate-900">
                     🥕 Ingrédients disponibles
@@ -219,7 +213,6 @@ export default function Home() {
 
                 <Separator />
 
-                {/* Servings */}
                 <div className="space-y-3">
                   <Label htmlFor="servings" className="text-base font-semibold text-slate-900">
                     👥 Nombre de portions
@@ -236,7 +229,6 @@ export default function Home() {
                   />
                 </div>
 
-                {/* Intolerances */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold text-slate-900">
                     ⚠️ Intolérances alimentaires
@@ -265,7 +257,6 @@ export default function Home() {
 
                 <Separator />
 
-                {/* Generate Button */}
                 <Button
                   onClick={handleGenerateRecipe}
                   disabled={selectedIngredients.length === 0 || recipeLoading}
@@ -284,7 +275,6 @@ export default function Home() {
                   )}
                 </Button>
 
-                {/* Progress Bar */}
                 {recipeLoading && (
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm text-slate-600">
@@ -295,7 +285,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Error Display */}
                 {recipeError && (
                   <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
                     <p className="text-sm text-red-600">{recipeError}</p>
@@ -305,7 +294,6 @@ export default function Home() {
             </Card>
           </div>
 
-          {/* Results Section */}
           <div className="scale-in">
             {recipeLoading && (
               <Card className="modern-card max-w-4xl mx-auto">

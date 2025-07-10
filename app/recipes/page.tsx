@@ -85,7 +85,6 @@ export default function RecipesPage() {
       <Navigation />
       <main className="container-modern section-padding">
         <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12">
-          {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="heading-lg gradient-text flex items-center gap-2 sm:gap-3">
@@ -106,7 +105,6 @@ export default function RecipesPage() {
             </Link>
           </div>
 
-          {/* Recipes List */}
           {recipes.length > 0 ? (
             <div className="space-y-6 sm:space-y-8">
               {recipes.map((recipe) => (

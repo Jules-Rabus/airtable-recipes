@@ -173,7 +173,6 @@ export default function RecipeDetailPage() {
     setNutritionProgressMessage("Initialisation de l'analyse...");
     setIsNutritionModalOpen(true);
 
-    // Animation de progression pour l'analyse nutritionnelle
     const progressSteps = [
       { targetProgress: 10, message: "Analyse des ingrédients...", duration: 1500 },
       { targetProgress: 25, message: "Calcul des calories...", duration: 2000 },
@@ -195,7 +194,6 @@ export default function RecipeDetailPage() {
         const stepElapsed = now - stepStartTime;
         const stepProgress = Math.min(stepElapsed / step.duration, 1);
         
-        // Smooth easing function for natural progression
         const easedProgress = stepProgress * stepProgress * (3 - 2 * stepProgress);
         const currentStepProgress = stepStartProgress + (step.targetProgress - stepStartProgress) * easedProgress;
         
@@ -245,37 +243,30 @@ export default function RecipeDetailPage() {
     }
   };
 
-  // Helper function to get recipe title
   const getRecipeTitle = (recipe: Recipe) => {
     return recipe.fields?.Title || 'Recette sans titre';
   };
 
-  // Helper function to get recipe description
   const getRecipeDescription = (recipe: Recipe) => {
     return recipe.fields?.Description;
   };
 
-  // Helper function to get recipe servings
   const getRecipeServings = (recipe: Recipe) => {
     return recipe.servings || recipe.fields?.Servings;
   };
 
-  // Helper function to get recipe prep time
   const getRecipePrepTime = (recipe: Recipe) => {
     return recipe.preparationTime || recipe.fields?.PreparationTime;
   };
 
-  // Helper function to get recipe cook time
   const getRecipeCookTime = (recipe: Recipe) => {
     return recipe.cookingTime || recipe.fields?.CookingTime;
   };
 
-  // Helper function to get recipe creation date
   const getRecipeCreatedAt = (recipe: Recipe) => {
     return recipe.created_at || recipe.createdTime;
   };
 
-  // Helper function to get ingredients from join table
   const getIngredients = (recipe: Recipe) => {
     if (recipe.ingredients) return recipe.ingredients;
     
@@ -291,7 +282,6 @@ export default function RecipeDetailPage() {
     return [];
   };
 
-  // Helper function to get instructions from join table
   const getInstructions = (recipe: Recipe) => {
     if (recipe.instructions) return recipe.instructions;
     
@@ -351,7 +341,6 @@ export default function RecipeDetailPage() {
       <Navigation />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
-          {/* Header */}
           <div className="flex items-center gap-4 mb-6">
             <Link href="/recipes">
               <Button variant="ghost" size="sm">
@@ -382,9 +371,8 @@ export default function RecipeDetailPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Recipe Info */}
+              <Card className="modern-card">
               <Card className="modern-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -422,7 +410,6 @@ export default function RecipeDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Ingredients */}
               <Card className="modern-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -450,7 +437,6 @@ export default function RecipeDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Instructions */}
               <Card className="modern-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -476,9 +462,7 @@ export default function RecipeDetailPage() {
               </Card>
             </div>
 
-            {/* Sidebar */}
             <div className="space-y-6">
-              {/* Nutrition Analysis CTA */}
               <Card className="modern-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -520,7 +504,6 @@ export default function RecipeDetailPage() {
                             </div>
                           </div>
                           
-                          {/* Progress Bar */}
                           <div className="space-y-2">
                             <div className="flex justify-between text-xs text-muted-foreground">
                               <span>{nutritionProgressMessage}</span>
@@ -545,7 +528,6 @@ export default function RecipeDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Recipe Metadata */}
               <Card className="modern-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">

@@ -22,7 +22,6 @@ export default function IngredientsPage() {
         <div>
             <h1>Ingredients</h1>
             <p>This page will display a list of ingredients.</p>
-            {/* You can add more content here, such as a list of ingredients or a form to add new ingredients */}
 
             <ul>
                 {ingredients && ingredients.map((ingredient) => (
