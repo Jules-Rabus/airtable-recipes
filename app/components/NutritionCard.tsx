@@ -3,41 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Activity, Zap, Droplets, Apple, Pill } from "lucide-react";
-
-interface NutritionData {
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber: number;
-  sugar: number;
-  sodium: number;
-  vitamins: {
-    A?: number;
-    C?: number;
-    D?: number;
-    E?: number;
-    K?: number;
-    B1?: number;
-    B2?: number;
-    B3?: number;
-    B6?: number;
-    B12?: number;
-    folate?: number;
-  };
-  minerals: {
-    calcium?: number;
-    iron?: number;
-    magnesium?: number;
-    phosphorus?: number;
-    potassium?: number;
-    zinc?: number;
-    copper?: number;
-    manganese?: number;
-    selenium?: number;
-  };
-  nutrition_notes: string;
-}
+import { NutritionData } from "@/lib/types";
 
 interface NutritionCardProps {
   nutrition: NutritionData;

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { RecipeCard as RecipeType } from "@/schemas/api";
+import { saveRecipe, deleteRecipe } from "@/lib/apiClient";
 
 interface RecipeCardProps {
   recipe: RecipeType;
@@ -38,33 +39,21 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
   const handleSaveRecipe = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch("/api/recipes/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          recipe: {
-            title,
-            description,
-            ingredients,
-            instructions,
-            serving,
-            difficulty,
-            cuisine,
-            preparationTime: prepTime,
-            cookingTime: cookTime,
-          },
-        }),
+      await saveRecipe({
+        title,
+        description,
+        ingredients,
+        instructions,
+        serving,
+        difficulty,
+        cuisine,
+        preparationTime: prepTime,
+        cookingTime: cookTime,
       });
 
-      if (response.ok) {
-        toast.success("Recette sauvegardée avec succès !");
-        if (onRecipeSaved) {
-          onRecipeSaved();
-        }
-      } else {
-        toast.error("Erreur lors de la sauvegarde");
+      toast.success("Recette sauvegardée avec succès !");
+      if (onRecipeSaved) {
+        onRecipeSaved();
       }
     } catch {
       toast.error("Erreur lors de la sauvegarde");
@@ -78,20 +67,9 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
     
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/recipes/delete`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ recipeId }),
-      });
-
-      if (response.ok) {
-        onDelete(recipeId);
-        toast.success("Recette supprimée avec succès !");
-      } else {
-        toast.error("Erreur lors de la suppression");
-      }
+      await deleteRecipe(recipeId);
+      onDelete(recipeId);
+      toast.success("Recette supprimée avec succès !");
     } catch {
       toast.error("Erreur lors de la suppression");
     } finally {

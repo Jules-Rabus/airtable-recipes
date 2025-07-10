@@ -14,96 +14,8 @@ import { ChefHat, Calendar, ArrowLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-
-interface NutritionData {
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber: number;
-  sugar: number;
-  sodium: number;
-  vitamins: {
-    A?: number;
-    C?: number;
-    D?: number;
-    E?: number;
-    K?: number;
-    B1?: number;
-    B2?: number;
-    B3?: number;
-    B6?: number;
-    B12?: number;
-    folate?: number;
-  };
-  minerals: {
-    calcium?: number;
-    iron?: number;
-    magnesium?: number;
-    phosphorus?: number;
-    potassium?: number;
-    zinc?: number;
-    copper?: number;
-    manganese?: number;
-    selenium?: number;
-  };
-  nutrition_notes: string;
-}
-
-interface RecipeIngredientRecord {
-  id: string;
-  createdTime: string;
-  fields: {
-    Identifier: number;
-    Recipe: string[];
-    Ingredient: string[];
-    Quantity: number;
-    Unit: string;
-  };
-  ingredientName?: string;
-}
-
-interface RecipeInstructionRecord {
-  id: string;
-  createdTime: string;
-  fields: {
-    Instruction: string;
-    Order: number;
-    Recipe: string[];
-  };
-}
-
-interface Recipe {
-  id: string;
-  createdTime?: string;
-  fields?: {
-    Title?: string;
-    Description?: string;
-    Serving?: number;
-    PreparationTime?: number;
-    CookingTime?: number;
-    Recipes_Ingredients?: string[];
-    Recipe_Instructions?: string[];
-  };
-  recipe_ingredient_quantity_records?: RecipeIngredientRecord[];
-  recipe_instruction_records?: RecipeInstructionRecord[];
-  ingredients?: Array<{
-    id: string;
-    name: string;
-    quantity?: number;
-    unit?: string;
-  }>;
-  instructions?: Array<{
-    text: string;
-    order: number;
-  }>;
-  intolerances?: string[];
-  serving?: number;
-  preparationTime?: number;
-  cookingTime?: number;
-  created_at?: string;
-  nutrition?: NutritionData;
-}
+import { getRecipe, deleteRecipe, analyzeRecipeNutrition } from "@/lib/apiClient";
+import { NutritionData, Recipe, RecipeIngredientRecord, RecipeInstructionRecord } from "@/lib/types";
 
 export default function RecipeDetailPage() {
   const params = useParams();
@@ -123,10 +35,8 @@ export default function RecipeDetailPage() {
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
-        const response = await fetch(`/api/recipes/${recipeId}`);
-        if (!response.ok) throw new Error('Failed to fetch recipe');
-        const data = await response.json();
-        setRecipe(data.recipe || data);
+        const data = await getRecipe(recipeId);
+        setRecipe(data);
       } catch (err) {
         const error = err as Error;
         setError(error.message || 'Failed to load recipe');
@@ -147,14 +57,7 @@ export default function RecipeDetailPage() {
 
     setIsDeleting(true);
     try {
-      const response = await fetch('/api/recipes/delete', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recipeId }),
-      });
-      
-      if (!response.ok) throw new Error('Failed to delete recipe');
-      
+      await deleteRecipe(recipeId);
       toast.success("Recette supprimée avec succès !");
       router.push('/recipes');
     } catch (error) {
@@ -209,23 +112,19 @@ export default function RecipeDetailPage() {
     }, 50);
 
     try {
-      const ingredients = getIngredients(recipe);
+      const ingredients = getIngredients(recipe).map(ing => ({
+        name: ing.name,
+        quantity: ing.quantity || 0,
+        unit: ing.unit || ''
+      }));
       const serving = getRecipeServing(recipe) || 1;
       const title = getRecipeTitle(recipe);
       
-      const response = await fetch('/api/recipes/analyze-nutrition', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ingredients,
-          serving,
-          recipeTitle: title
-        }),
+      const nutrition = await analyzeRecipeNutrition({
+        ingredients,
+        serving,
+        recipeTitle: title
       });
-
-      if (!response.ok) throw new Error('Failed to analyze nutrition');
-      
-      const nutrition = await response.json();
       setNutritionData(nutrition);
       setNutritionProgress(100);
       setNutritionProgressMessage("Analyse terminée !");

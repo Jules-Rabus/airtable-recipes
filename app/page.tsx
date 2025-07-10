@@ -15,7 +15,7 @@ import { LoadingSpinner } from "./components/LoadingSpinner";
 
 import React from "react";
 import { RecipeCard } from "./components/RecipeCard";
-import { fetchIngredientOptions, generateRecipes } from "@/app/api/helpers";
+import { getIngredientOptions, generateRecipes, createIngredient } from "@/lib/apiClient";
 import { IngredientOption, RecipeCard as RecipeType } from "@/schemas/api";
 
 import { toast } from "sonner";
@@ -48,7 +48,7 @@ export default function Home() {
   useEffect(() => {
     const load = async () => {
       try {
-        const options = await fetchIngredientOptions();
+        const options = await getIngredientOptions();
         setIngredientOptions(options);
       } catch {
         setIngredientOptions([]);
@@ -64,14 +64,7 @@ export default function Home() {
     select: (values: string[]) => void
   ) => {
     try {
-      const response = await fetch('/api/ingredients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: option.label }),
-      });
-      if (!response.ok) throw new Error('Failed to add ingredient');
-      const record = await response.json();
-      const newOption = { label: record.fields?.Name || record.id, value: record.id };
+      const newOption = await createIngredient(option.label);
       setIngredientOptions((prev) => [newOption, ...prev]);
       const merged = [...selectedIngredients, newOption.value];
       select(merged);
