@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Trash2, Clock, Users, ChefHat, Save } from "lucide-react";
+import { Trash2, Clock, Users, ChefHat, Save, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { RecipeCard as RecipeType } from "@/schemas/api";
 
 interface RecipeCardProps {
-  recipe: Record<string, unknown>;
+  recipe: RecipeType;
   onDelete?: (recipeId: string) => void;
   showDeleteButton?: boolean;
   showSaveButton?: boolean;
@@ -23,17 +24,16 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Extract recipe data with proper typing and Airtable compatibility
-  const title = (recipe.title as string) || ((recipe.fields as any)?.Title as string) || "Recette sans titre";
-  const description = (recipe.description as string) || ((recipe.fields as any)?.Description as string) || "";
-  const ingredients = (recipe.ingredients as Array<{ name: string; quantity: number; unit: string }>) || [];
-  const instructions = (recipe.instructions as Array<{ text: string; order: number }>) || [];
-  const servings = (recipe.servings as number) || ((recipe.fields as any)?.Servings as number) || 1;
-  const difficulty = (recipe.difficulty as string) || "Moyenne";
-  const cuisine = (recipe.cuisine as string) || "Française";
-  const recipeId = (recipe.id as string) || "";
-  const prepTime = (recipe.prep_time_minutes as number) || ((recipe.fields as any)?.PrepTimeMinutes as number) || 0;
-  const cookTime = (recipe.cook_time_minutes as number) || ((recipe.fields as any)?.CookTimeMinutes as number) || 0;
+  const title = recipe.title || recipe.fields?.Title || "Recette sans titre";
+  const description = recipe.description || recipe.fields?.Description || "";
+  const ingredients = recipe.ingredients || [];
+  const instructions = recipe.instructions || [];
+  const servings = recipe.servings ?? recipe.fields?.Servings ?? 1;
+  const difficulty = recipe.difficulty || "Moyenne";
+  const cuisine = recipe.cuisine || "Française";
+  const recipeId = recipe.id || "";
+  const prepTime = recipe.preparationTime ?? recipe.fields?.PreparationTime ?? 0;
+  const cookTime = recipe.cookingTime ?? recipe.fields?.CookingTime ?? 0;
 
   const handleSaveRecipe = async () => {
     setIsSaving(true);
@@ -52,8 +52,8 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
             servings,
             difficulty,
             cuisine,
-            prep_time_minutes: prepTime,
-            cook_time_minutes: cookTime,
+            preparationTime: prepTime,
+            cookingTime: cookTime,
           },
         }),
       });
@@ -67,7 +67,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
       } else {
         toast.error("Erreur lors de la sauvegarde");
       }
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors de la sauvegarde");
     } finally {
       setIsSaving(false);
@@ -93,7 +93,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
       } else {
         toast.error("Erreur lors de la suppression");
       }
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors de la suppression");
     } finally {
       setIsDeleting(false);
@@ -183,7 +183,17 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
               variant="ghost"
               className="btn-ghost flex-1 sm:flex-none"
             >
-              {isExpanded ? "👁️ Masquer" : "👁️ Voir les détails"}
+              {isExpanded ? (
+                <div className="flex items-center gap-1">
+                  <BookOpen className="w-3 h-3" />
+                  <span className="text-xs hidden sm:inline">Hide</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <BookOpen className="w-3 h-3" />
+                  <span className="text-xs hidden sm:inline">Details</span>
+                </div>
+              )}
             </Button>
           </div>
         </div>
@@ -374,7 +384,17 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
             variant="ghost"
             className="hover-lift bg-white/90 backdrop-blur-sm"
           >
-            {isExpanded ? "👁️ Masquer" : "👁️ Voir détails"}
+            {isExpanded ? (
+              <div className="flex items-center gap-1">
+                <BookOpen className="w-3 h-3" />
+                <span className="text-xs">Hide</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <BookOpen className="w-3 h-3" />
+                <span className="text-xs">Details</span>
+              </div>
+            )}
           </Button>
         </div>
 

@@ -9,49 +9,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, ChefHat } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-
-interface Recipe extends Record<string, unknown> {
-  id: string;
-  fields?: {
-    Title?: string;
-    Description?: string;
-    Servings?: number;
-    PrepTimeMinutes?: number;
-    CookTimeMinutes?: number;
-  };
-  ingredients?: Array<{
-    id: string;
-    name: string;
-    quantity?: number;
-    unit?: string;
-  }>;
-  instructions?: Array<{
-    text: string;
-    order: number;
-  }>;
-  servings?: number;
-  prep_time_minutes?: number;
-  cook_time_minutes?: number;
-  title?: string;
-  description?: string;
-}
+import { fetchRecipes as getRecipes } from "@/lib/api";
+import { RecipeCard as RecipeType } from "@/schemas/api";
 
 export default function RecipesPage() {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [recipes, setRecipes] = useState<RecipeType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchRecipes();
+    loadRecipes();
   }, []);
 
-  const fetchRecipes = async () => {
+  const loadRecipes = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/recipes');
-      if (!response.ok) throw new Error('Failed to fetch recipes');
-      const data = await response.json();
-      setRecipes(Array.isArray(data) ? data : []);
+      const data = await getRecipes();
+      setRecipes(data);
     } catch (err) {
       const error = err as Error;
       setError(error.message || 'Failed to load recipes');
@@ -97,7 +71,7 @@ export default function RecipesPage() {
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-2xl font-bold text-red-600 mb-4">Erreur</h1>
             <p className="text-muted-foreground mb-6">{error}</p>
-            <Button onClick={fetchRecipes} variant="outline">
+            <Button onClick={loadRecipes} variant="outline">
               Réessayer
             </Button>
           </div>

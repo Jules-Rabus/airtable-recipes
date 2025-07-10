@@ -80,8 +80,8 @@ interface Recipe {
     Title?: string;
     Description?: string;
     Servings?: number;
-    PrepTimeMinutes?: number;
-    CookTimeMinutes?: number;
+    PreparationTime?: number;
+    CookingTime?: number;
     Recipes_Ingredients?: string[];
     Recipe_Instructions?: string[];
   };
@@ -99,8 +99,8 @@ interface Recipe {
   }>;
   intolerances?: string[];
   servings?: number;
-  prep_time_minutes?: number;
-  cook_time_minutes?: number;
+  preparationTime?: number;
+  cookingTime?: number;
   created_at?: string;
   nutrition?: NutritionData;
 }
@@ -262,12 +262,12 @@ export default function RecipeDetailPage() {
 
   // Helper function to get recipe prep time
   const getRecipePrepTime = (recipe: Recipe) => {
-    return recipe.prep_time_minutes || recipe.fields?.PrepTimeMinutes;
+    return recipe.preparationTime || recipe.fields?.PreparationTime;
   };
 
   // Helper function to get recipe cook time
   const getRecipeCookTime = (recipe: Recipe) => {
-    return recipe.cook_time_minutes || recipe.fields?.CookTimeMinutes;
+    return recipe.cookingTime || recipe.fields?.CookingTime;
   };
 
   // Helper function to get recipe creation date

@@ -1,26 +1,21 @@
 'use client';
 
 import { useEffect, useState } from "react";
+import { fetchIngredientOptions } from "@/lib/api";
+import { IngredientOption } from "@/schemas/api";
 
 export default function IngredientsPage() {
-    // get all ingredients from Airtable
-    const [ingredients, setIngredients] = useState([]);
+    const [ingredients, setIngredients] = useState<IngredientOption[]>([]);
 
     useEffect(() => {
-        const fetchIngredients = async () => {
+        const load = async () => {
             try {
-                const response = await fetch('/api/ingredients');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
+                const data = await fetchIngredientOptions();
                 setIngredients(data);
-            } catch (error) {
-                console.error('Error fetching ingredients:', error);
-            }
+            } catch {}
         };
 
-        fetchIngredients();
+        load();
     }, []);
 
     return (
@@ -31,9 +26,7 @@ export default function IngredientsPage() {
 
             <ul>
                 {ingredients && ingredients.map((ingredient) => (
-                    <li key={ingredient.id}>
-                        {ingredient.fields.Name} - {ingredient.fields.Description}
-                    </li>
+                    <li key={ingredient.value}>{ingredient.label}</li>
                 ))}
             </ul>
         </div>

@@ -15,6 +15,8 @@ import { LoadingSpinner } from "./components/LoadingSpinner";
 
 import React from "react";
 import { RecipeCard } from "./components/RecipeCard";
+import { fetchIngredientOptions, generateRecipes } from "@/lib/api";
+import { IngredientOption, RecipeCard as RecipeType } from "@/schemas/api";
 
 import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
@@ -33,26 +35,20 @@ const INTOLERANCES = [
 
 export default function Home() {
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
-  const [ingredientOptions, setIngredientOptions] = useState<{ label: string; value: string }[]>([]);
+  const [ingredientOptions, setIngredientOptions] = useState<IngredientOption[]>([]);
   const [loading, setLoading] = useState(true);
-  const [recipes, setRecipes] = useState<Record<string, unknown>[]>([]);
+  const [recipes, setRecipes] = useState<RecipeType[]>([]);
   const [recipeLoading, setRecipeLoading] = useState(false);
   const [recipeError, setRecipeError] = useState<string | null>(null);
   const [intolerances, setIntolerances] = useState<string[]>([]);
   const [servings, setServings] = useState(1);
+  const [genre, setGenre] = useState("");
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const fetchIngredients = async () => {
+    const load = async () => {
       try {
-        const response = await fetch("/api/ingredients");
-        if (!response.ok) throw new Error("Failed to fetch ingredients");
-        const data: Array<{ fields?: { Name?: string }; id: string }> = await response.json();
-        // Map Airtable records to MultiSelect options
-        const options = (data || []).map((record) => ({
-          label: record.fields?.Name || record.id,
-          value: record.id,
-        }));
+        const options = await fetchIngredientOptions();
         setIngredientOptions(options);
       } catch {
         setIngredientOptions([]);
@@ -60,11 +56,11 @@ export default function Home() {
         setLoading(false);
       }
     };
-    fetchIngredients();
+    load();
   }, []);
 
   const handleAddAndSelectIngredientOption = async (
-    option: { label: string; value: string },
+    option: IngredientOption,
     select: (values: string[]) => void
   ) => {
     try {
@@ -141,26 +137,12 @@ export default function Home() {
     }, 50); // Update every 50ms for very smooth animation
 
     try {
-      // Send both id and name for each selected ingredient
       const selectedIngredientObjects = selectedIngredients.map(id => {
         const found = ingredientOptions.find(opt => opt.value === id);
         return found ? { id: found.value, name: found.label } : { id, name: id };
       });
-      const response = await fetch('/api/recipes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ingredients: selectedIngredientObjects,
-          intolerances,
-          servings,
-        }),
-      });
-      if (!response.ok) throw new Error('Failed to generate recipe');
-      const data = await response.json();
-      // Use structuredResponse.recipes if present, else fallback
-      const recipesArr = data.structuredResponse?.recipes || data.recipes || [];
-      // Attach the ingredient id mapping to each recipe for later use
-      setRecipes(Array.isArray(recipesArr) ? recipesArr.map((r: Record<string, unknown>) => ({ ...r, ingredientIdMap: selectedIngredientObjects })) : []);
+      const recipesArr = await generateRecipes({ ingredients: selectedIngredientObjects, intolerances, servings, genre });
+      setRecipes(recipesArr.map(r => ({ ...r, ingredientIdMap: selectedIngredientObjects })));
       setProgress(100);
       setProgressMessage("Recettes générées avec succès !");
       toast.success("Recettes générées avec succès !");
@@ -265,6 +247,19 @@ export default function Home() {
                     onValueChange={setIntolerances}
                     placeholder="Sélectionnez vos intolérances (optionnel)"
                     maxCount={10}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="genre" className="text-base font-semibold text-slate-900">
+                    🍽️ Genre de recette
+                  </Label>
+                  <Input
+                    id="genre"
+                    value={genre}
+                    onChange={e => setGenre(e.target.value)}
+                    placeholder="Exemple : dessert, plat principal..."
+                    className="input-modern h-12"
                   />
                 </div>
 

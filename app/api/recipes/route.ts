@@ -65,8 +65,8 @@ const recipeSchema = z.object({
   instructions: z.array(instructionObjectSchema).describe("Liste d'instructions, chaque instruction est un objet avec texte et ordre."),
   description: z.string().describe("Courte description de la recette."),
   servings: z.number().describe("Nombre de portions de la recette. Toujours 1."),
-  prep_time_minutes: z.number().describe("Temps de préparation en minutes."),
-  cook_time_minutes: z.number().describe("Temps de cuisson en minutes."),
+  preparationTime: z.number().describe("Temps de préparation en minutes."),
+  cookingTime: z.number().describe("Temps de cuisson en minutes."),
 });
 const recipesSchema = z.object({
   recipes: z.array(recipeSchema)
@@ -210,8 +210,8 @@ export async function POST(req: Request) {
           ],
           "description": "Description courte de la recette",
           "servings": ${servings},
-          "prep_time_minutes": 15,
-          "cook_time_minutes": 30
+          "preparationTime": 15,
+          "cookingTime": 30
         }
       ]
     }
@@ -223,8 +223,8 @@ export async function POST(req: Request) {
     - instructions : array d'objets avec text (string) et order (number)
     - description : description courte (string)
     - servings : ${servings} (number)
-    - prep_time_minutes : temps préparation en minutes (number)
-    - cook_time_minutes : temps cuisson en minutes (number)
+    - preparationTime : temps préparation en minutes (number)
+    - cookingTime : temps cuisson en minutes (number)
 
     EXEMPLES DE BONNES PRATIQUES (en français) :
     - Avec pomme + banane → Smoothie pomme-banane + Compote de fruits mixés
