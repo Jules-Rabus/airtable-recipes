@@ -14,8 +14,8 @@ import {
   RecipeInstructionRecord,
   RecipeRecord
 } from '@/lib/types'
-import {addRecipeIngredientJoins, fetchRecipeIngredientJoins} from '@/app/api/recipeIngredients'
-import {addRecipeInstructions, fetchRecipeInstructions} from "@/app/api/recipeInstructions";
+import {addRecipeIngredientJoins, fetchRecipeIngredientJoins} from '@/api/recipeIngredients'
+import {addRecipeInstructions, fetchRecipeInstructions} from "@/api/recipeInstructions";
 
 export const generateRecipes = async (payload: { ingredients: { id: string; name: string }[]; intolerances: string[]; serving: number; genre?: string }): Promise<RecipeCard[]> => {
   const { ingredients, intolerances, serving = 1, genre } = payload

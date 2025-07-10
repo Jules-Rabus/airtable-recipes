@@ -14,7 +14,7 @@ import { ChefHat, Calendar, ArrowLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { getRecipe, deleteRecipe, analyzeRecipeNutrition } from "@/app/api/recipes";
+import { getRecipe, deleteRecipe, analyzeRecipeNutrition } from "@/api/recipes";
 import { NutritionData, Recipe } from "@/lib/types";
 
 export default function RecipeDetailPage() {

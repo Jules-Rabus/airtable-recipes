@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, ChefHat } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { getRecipes } from "@/app/api/recipes";
+import { getRecipes } from "@/api/recipes";
 import { RecipeCard as RecipeType } from "@/schemas";
 
 export default function RecipesPage() {
