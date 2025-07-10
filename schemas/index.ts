@@ -19,7 +19,7 @@ const recipeIngredientSchema = z.object({
 });
 
 const instructionSchema = z.object({
-  instruction: z.string(),
+  text: z.string(),
   order: z.number(),
   recipes: z.array(z.string()).optional(),
 });

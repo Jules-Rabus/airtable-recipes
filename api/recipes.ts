@@ -13,7 +13,8 @@ import {
   Recipe,
   RecipeIngredientRecord,
   RecipeInstructionRecord,
-  RecipeRecord
+  RecipeRecord,
+  JoinRecord
 } from '@/lib/types'
 import {addRecipeIngredientJoins, fetchRecipeIngredientJoins} from '@/api/recipeIngredients'
 import {addRecipeInstructions, fetchRecipeInstructions} from "@/api/recipeInstructions";
@@ -128,22 +129,22 @@ export const getRecipes = async (): Promise<RecipeCard[]> => {
       { sort: [{ field: 'Title', direction: 'asc' }] }
   ) as RecipeRecord[];
 
-  const [ingredients, instructions] = await Promise.all([
+  const [ingredientJoins, instructions] = await Promise.all([
     fetchRecipeIngredientJoins(),
     fetchRecipeInstructions()
-  ]) as [IngredientRecord[], InstructionRecord[]]
+  ]) as [RecipeIngredientRecord[], InstructionRecord[]]
 
-  const ingredientsMap = new Map<string, IngredientRecord[]>()
-    ingredients.forEach(ing => {
-        const refs = ing.fields.Recipes as string[]
-        refs.forEach(id => {
-        if (!ingredientsMap.has(id)) ingredientsMap.set(id, [])
-        ingredientsMap.get(id)!.push(ing)
-        })
+  const ingredientsMap = new Map<string, RecipeIngredientRecord[]>()
+  ingredientJoins.forEach(join => {
+    const refs = join.fields?.Recipes ?? []
+    refs.forEach(id => {
+      if (!ingredientsMap.has(id)) ingredientsMap.set(id, [])
+      ingredientsMap.get(id)!.push(join)
     })
+  })
   const instructionsMap = new Map<string, InstructionRecord[]>()
   instructions.forEach(instr => {
-    const refs = instr.fields.Recipes as string[]
+    const refs = instr.fields?.Recipes ?? []
     refs.forEach(id => {
       if (!instructionsMap.has(id)) instructionsMap.set(id, [])
       instructionsMap.get(id)!.push(instr)
@@ -154,13 +155,21 @@ export const getRecipes = async (): Promise<RecipeCard[]> => {
     id: r.id,
     createdTime: r.createdTime,
     fields: r.fields,
-    title: r.fields.Title,
-    description: r.fields.Description,
-    serving: r.fields.Serving,
+    title: r.fields?.Title,
+    description: r.fields?.Description,
+    serving: r.fields?.Serving,
     preparationTime: r.fields?.PrepTimeMinutes,
     cookingTime: r.fields?.CookTimeMinutes,
-    ingredients: ingredientsMap.get(r.id),
-    instructions: instructionsMap.get(r.id)
+    ingredients: ingredientsMap.get(r.id)?.map(j => ({
+      id: j.fields?.Ingredient?.[0] ?? j.id,
+      name: j.ingredientName ?? '',
+      quantity: typeof j.fields?.Quantity === 'number' ? j.fields?.Quantity : undefined,
+      unit: j.fields?.Unit
+    })),
+    instructions: instructionsMap.get(r.id)?.map(i => ({
+      text: i.fields?.Instruction ?? '',
+      order: i.fields?.Order ?? 0
+    }))
   }))
 }
 

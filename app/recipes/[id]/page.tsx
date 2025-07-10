@@ -172,9 +172,9 @@ export default function RecipeDetailPage() {
     if (recipe.recipe_ingredient_quantity_records) {
       return recipe.recipe_ingredient_quantity_records.map(record => ({
         id: record.id,
-        name: record.ingredientName || `Ingrédient ${record.fields.Identifier}`,
-        quantity: record.fields.Quantity,
-        unit: record.fields.Unit
+        name: record.ingredientName || `Ingrédient ${record.fields?.Identifier ?? ''}`,
+        quantity: record.fields?.Quantity,
+        unit: record.fields?.Unit
       }));
     }
     
@@ -186,10 +186,10 @@ export default function RecipeDetailPage() {
     
     if (recipe.recipe_instruction_records) {
       return recipe.recipe_instruction_records
-        .sort((a, b) => a.fields.Order - b.fields.Order)
+        .sort((a, b) => (a.fields?.Order ?? 0) - (b.fields?.Order ?? 0))
         .map(record => ({
-          text: record.fields.Instruction,
-          order: record.fields.Order
+          text: record.fields?.Instruction ?? '',
+          order: record.fields?.Order ?? 0
         }));
     }
     
