@@ -42,7 +42,7 @@ const nutritionSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const { ingredients, servings, recipeTitle } = await req.json();
+    const { ingredients, serving, recipeTitle } = await req.json();
     
     if (!Array.isArray(ingredients) || ingredients.length === 0) {
       return NextResponse.json({ error: 'Les ingrédients sont requis' }, { status: 400 });
@@ -60,11 +60,11 @@ export async function POST(req: Request) {
     const prompt = `Tu es un nutritionniste expert français. Analyse la valeur nutritionnelle de cette recette avec PRÉCISION.
 
     INGRÉDIENTS : ${ingredientsList}
-    PORTIONS : ${servings} personne(s)
+    PORTIONS : ${serving} personne(s)
     RECETTE : ${recipeTitle || 'Recette'}
 
     RÈGLES STRICTES D'ANALYSE :
-    1. Calcule les valeurs nutritionnelles pour ${servings} portion(s) EXACTEMENT
+    1. Calcule les valeurs nutritionnelles pour ${serving} portion(s) EXACTEMENT
     2. Utilise UNIQUEMENT des données nutritionnelles standardisées et vérifiées
     3. Inclus TOUTES les vitamines et minéraux présents (même si 0)
     4. Donne des notes nutritionnelles précises et factuelles en français
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     CONTRAINTES DE CALCUL :
     - Multiplier les valeurs par (quantité en g / 100) pour chaque ingrédient
     - Additionner toutes les valeurs pour obtenir le total
-    - Multiplier par le nombre de portions (${servings})
+    - Multiplier par le nombre de portions (${serving})
     - Arrondir à 1 décimale pour les macronutriments, 0 décimale pour les vitamines/minéraux
     - Si un ingrédient n'est pas dans la liste de référence, utiliser des valeurs moyennes réalistes
 

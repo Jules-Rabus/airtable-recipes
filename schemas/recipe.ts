@@ -10,7 +10,7 @@ export const recipeSchema = z.object({
     unit: z.string().min(1, "L'unité est requise")
   })).min(1, "Au moins un ingrédient est requis"),
   steps: z.array(z.string().min(1, "Chaque étape doit contenir du texte")).min(1, "Au moins une étape est requise"),
-  servings: z.number().min(1, "Le nombre de portions doit être supérieur à 0").default(1),
+  serving: z.number().min(1, "Le nombre de portions doit être supérieur à 0").default(1),
   preparationTime: z.number().min(0, "Le temps de préparation ne peut pas être négatif").default(0),
   cookingTime: z.number().min(0, "Le temps de cuisson ne peut pas être négatif").default(0),
 });

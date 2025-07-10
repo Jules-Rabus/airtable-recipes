@@ -28,7 +28,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
   const description = recipe.description || recipe.fields?.Description || "";
   const ingredients = recipe.ingredients || [];
   const instructions = recipe.instructions || [];
-  const servings = recipe.servings ?? recipe.fields?.Servings ?? 1;
+  const serving = recipe.serving ?? recipe.fields?.Serving ?? 1;
   const difficulty = recipe.difficulty || "Moyenne";
   const cuisine = recipe.cuisine || "Française";
   const recipeId = recipe.id || "";
@@ -49,7 +49,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
             description,
             ingredients,
             instructions,
-            servings,
+            serving,
             difficulty,
             cuisine,
             preparationTime: prepTime,
@@ -118,7 +118,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
               </Badge>
               <Badge variant="secondary" className="badge-secondary">
                 <Users className="w-3 h-3" />
-                {servings} portion{servings > 1 ? 's' : ''}
+                {serving} portion{serving > 1 ? 's' : ''}
               </Badge>
               <Badge variant="secondary" className="badge-secondary">
                 <ChefHat className="w-3 h-3" />
@@ -309,7 +309,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
                       </Badge>
                       <Badge variant="secondary" className="flex items-center gap-1">
                         <Users className="w-3 h-3" />
-                        {servings} portion{servings > 1 ? 's' : ''}
+                        {serving} portion{serving > 1 ? 's' : ''}
                       </Badge>
                       <Badge variant="secondary" className="flex items-center gap-1">
                         <ChefHat className="w-3 h-3" />

@@ -29,7 +29,7 @@ export const recipeCardSchema = z.object({
   description: z.string().optional(),
   ingredients: z.array(recipeIngredientSchema).optional(),
   instructions: z.array(instructionSchema).optional(),
-  servings: z.number().optional(),
+  serving: z.number().optional(),
   preparationTime: z.number().optional(),
   cookingTime: z.number().optional(),
   difficulty: z.string().optional(),
@@ -37,7 +37,7 @@ export const recipeCardSchema = z.object({
   fields: z.object({
     Title: z.string().optional(),
     Description: z.string().optional(),
-    Servings: z.number().optional(),
+    Serving: z.number().optional(),
     PreparationTime: z.number().optional(),
     CookingTime: z.number().optional(),
   }).optional(),

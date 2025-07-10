@@ -9,7 +9,7 @@ export const fetchIngredientOptions = async (): Promise<IngredientOption[]> => {
   return records.map(r => ingredientOptionSchema.parse({ label: r.fields?.Name ?? r.id, value: r.id }));
 };
 
-export const generateRecipes = async (payload: { ingredients: { id: string; name: string }[]; intolerances: string[]; servings: number; genre?: string; }): Promise<RecipeCard[]> => {
+export const generateRecipes = async (payload: { ingredients: { id: string; name: string }[]; intolerances: string[]; serving: number; genre?: string; }): Promise<RecipeCard[]> => {
   const res = await fetch('/api/recipes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   if (!res.ok) throw new Error('Failed to generate recipe');
   const data = await res.json();

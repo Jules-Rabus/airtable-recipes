@@ -41,7 +41,7 @@ export default function Home() {
   const [recipeLoading, setRecipeLoading] = useState(false);
   const [recipeError, setRecipeError] = useState<string | null>(null);
   const [intolerances, setIntolerances] = useState<string[]>([]);
-  const [servings, setServings] = useState(1);
+  const [serving, setServing] = useState(1);
   const [genre, setGenre] = useState("");
   const [progress, setProgress] = useState(0);
 
@@ -139,7 +139,7 @@ export default function Home() {
         const found = ingredientOptions.find(opt => opt.value === id);
         return found ? { id: found.value, name: found.label } : { id, name: id };
       });
-      const recipesArr = await generateRecipes({ ingredients: selectedIngredientObjects, intolerances, servings, genre });
+      const recipesArr = await generateRecipes({ ingredients: selectedIngredientObjects, intolerances, serving, genre });
       setRecipes(recipesArr.map(r => ({ ...r, ingredientIdMap: selectedIngredientObjects })));
       setProgress(100);
       setProgressMessage("Recettes générées avec succès !");
@@ -214,16 +214,16 @@ export default function Home() {
                 <Separator />
 
                 <div className="space-y-3">
-                  <Label htmlFor="servings" className="text-base font-semibold text-slate-900">
+                  <Label htmlFor="serving" className="text-base font-semibold text-slate-900">
                     👥 Nombre de portions
                   </Label>
                   <Input
-                    id="servings"
+                    id="serving"
                     type="number"
                     min={1}
                     max={100}
-                    value={servings}
-                    onChange={e => setServings(Number(e.target.value))}
+                    value={serving}
+                    onChange={e => setServing(Number(e.target.value))}
                     placeholder="Nombre de portions"
                     className="input-modern text-center h-12 text-lg"
                   />

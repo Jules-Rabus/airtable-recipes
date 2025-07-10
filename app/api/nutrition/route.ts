@@ -42,7 +42,7 @@ const nutritionSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const { ingredients, servings = 1 } = await req.json();
+    const { ingredients, serving = 1 } = await req.json();
     if (!Array.isArray(ingredients) || ingredients.length === 0) {
       return NextResponse.json({ error: 'Ingredients are required' }, { status: 400 });
     }
@@ -57,10 +57,10 @@ export async function POST(req: Request) {
     const prompt = `Tu es un nutritionniste expert français. Analyse la valeur nutritionnelle de cette recette.
 
     INGRÉDIENTS : ${ingredientList}
-    PORTIONS : ${servings} personne(s)
+    PORTIONS : ${serving} personne(s)
 
     RÈGLES D'ANALYSE :
-    1. Calcule les valeurs nutritionnelles pour ${servings} portion(s)
+    1. Calcule les valeurs nutritionnelles pour ${serving} portion(s)
     2. Utilise des données nutritionnelles précises et réalistes
     3. Inclus toutes les vitamines et minéraux présents
     4. Donne des notes nutritionnelles en français

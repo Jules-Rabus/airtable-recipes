@@ -79,7 +79,7 @@ interface Recipe {
   fields?: {
     Title?: string;
     Description?: string;
-    Servings?: number;
+    Serving?: number;
     PreparationTime?: number;
     CookingTime?: number;
     Recipes_Ingredients?: string[];
@@ -98,7 +98,7 @@ interface Recipe {
     order: number;
   }>;
   intolerances?: string[];
-  servings?: number;
+  serving?: number;
   preparationTime?: number;
   cookingTime?: number;
   created_at?: string;
@@ -210,7 +210,7 @@ export default function RecipeDetailPage() {
 
     try {
       const ingredients = getIngredients(recipe);
-      const servings = getRecipeServings(recipe) || 1;
+      const serving = getRecipeServing(recipe) || 1;
       const title = getRecipeTitle(recipe);
       
       const response = await fetch('/api/recipes/analyze-nutrition', {
@@ -218,7 +218,7 @@ export default function RecipeDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ingredients,
-          servings,
+          serving,
           recipeTitle: title
         }),
       });
@@ -251,8 +251,8 @@ export default function RecipeDetailPage() {
     return recipe.fields?.Description;
   };
 
-  const getRecipeServings = (recipe: Recipe) => {
-    return recipe.servings || recipe.fields?.Servings;
+  const getRecipeServing = (recipe: Recipe) => {
+    return recipe.serving || recipe.fields?.Serving;
   };
 
   const getRecipePrepTime = (recipe: Recipe) => {
@@ -334,7 +334,7 @@ export default function RecipeDetailPage() {
 
   const ingredients = getIngredients(recipe);
   const instructions = getInstructions(recipe);
-  const servings = getRecipeServings(recipe) || 1;
+  const serving = getRecipeServing(recipe) || 1;
 
   return (
     <div className="min-h-screen">
@@ -395,7 +395,7 @@ export default function RecipeDetailPage() {
                     </div>
                     <div className="text-center p-3 bg-purple-50 rounded-lg">
                       <div className="text-2xl font-bold text-purple-600">
-                        {servings}
+                        {serving}
                       </div>
                       <div className="text-sm text-muted-foreground">Portions</div>
                     </div>
@@ -514,7 +514,7 @@ export default function RecipeDetailPage() {
                       ) : nutritionData ? (
                         <NutritionCard 
                           nutrition={nutritionData} 
-                          servings={servings}
+                          serving={serving}
                           noCard={true}
                         />
                       ) : (
@@ -543,7 +543,7 @@ export default function RecipeDetailPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">ID</span>
-                    <span className="text-sm font-mono text-xs">{recipe.id}</span>
+                    <span className="text-sm font-mono">{recipe.id}</span>
                   </div>
                 </CardContent>
               </Card>

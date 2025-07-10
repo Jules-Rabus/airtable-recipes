@@ -23,7 +23,7 @@ interface RecipeRecord extends AirtableRecord {
   fields?: {
     Title?: string;
     Description?: string;
-    Servings?: number;
+    Serving?: number;
     PrepTimeMinutes?: number;
     CookTimeMinutes?: number;
   };
@@ -63,7 +63,7 @@ const recipeSchema = z.object({
   ingredients: z.array(ingredientObjectSchema).describe("Liste d'ingrédients, chaque ingrédient avec nom, quantité (nombre) et unité (chaîne). N'utiliser que les ingrédients fournis."),
   instructions: z.array(instructionObjectSchema).describe("Liste d'instructions, chaque instruction est un objet avec texte et ordre."),
   description: z.string().describe("Courte description de la recette."),
-  servings: z.number().describe("Nombre de portions de la recette. Toujours 1."),
+  serving: z.number().describe("Nombre de portions de la recette. Toujours 1."),
   preparationTime: z.number().describe("Temps de préparation en minutes."),
   cookingTime: z.number().describe("Temps de cuisson en minutes."),
 });
@@ -124,7 +124,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { ingredients, intolerances, servings = 1, genre } = await req.json();
+    const { ingredients, intolerances, serving = 1, genre } = await req.json();
     if (!Array.isArray(ingredients) || ingredients.length === 0) {
       return NextResponse.json({ error: 'Les ingrédients sont requis' }, { status: 400 });
     }
@@ -155,7 +155,7 @@ export async function POST(req: Request) {
     - Utilise UNIQUEMENT les ingrédients alimentaires fournis
     - N'ajoute AUCUN ingrédient supplémentaire
     - Respecte les intolérances : ${Array.isArray(intolerances) && intolerances.length > 0 ? intolerances.map((i: unknown) => typeof i === 'object' && i !== null && 'name' in i ? (i as { name: string }).name : i).join(", ") : "aucune"}
-    - Portions : ${servings} personne(s) par recette
+    - Portions : ${serving} personne(s) par recette
 
     INGRÉDIENTS DISPONIBLES : ${ingredientListJson}
 
@@ -165,10 +165,10 @@ export async function POST(req: Request) {
     3. Propose une grande variété de styles (entrée, plat principal, dessert, boisson, snack, apéritif)
     4. Équilibre les saveurs dans chaque recette
     5. Instructions claires et séquentielles (numérotées à partir de 1)
-    6. ⚠️ QUANTITÉS OBLIGATOIRES : Adapte TOUTES les quantités d'ingrédients au nombre de personnes (${servings})
-       - Pour ${servings} personne(s), calcule les quantités proportionnellement
-       - Exemple : si 1 portion = 100g, alors ${servings} portions = ${servings * 100}g
-       - Utilise des quantités réalistes et précises pour ${servings} personne(s)
+    6. ⚠️ QUANTITÉS OBLIGATOIRES : Adapte TOUTES les quantités d'ingrédients au nombre de personnes (${serving})
+       - Pour ${serving} personne(s), calcule les quantités proportionnellement
+       - Exemple : si 1 portion = 100g, alors ${serving} portions = ${serving * 100}g
+       - Utilise des quantités réalistes et précises pour ${serving} personne(s)
     7. Créativité : Plus il y a d'ingrédients, plus tu peux être créatif et proposer de recettes
     
     `;
@@ -201,7 +201,7 @@ export async function POST(req: Request) {
             }
           ],
           "description": "Description courte de la recette",
-          "servings": ${servings},
+          "serving": ${serving},
           "preparationTime": 15,
           "cookingTime": 30
         }
@@ -211,10 +211,10 @@ export async function POST(req: Request) {
     CHAMPS OBLIGATOIRES POUR CHAQUE RECETTE :
     - title : nom de la recette (string)
     - ingredients : array d'objets avec id, name, quantity (number), unit (string)
-      ⚠️ IMPORTANT : Les quantités doivent être calculées pour ${servings} personne(s)
+      ⚠️ IMPORTANT : Les quantités doivent être calculées pour ${serving} personne(s)
     - instructions : array d'objets avec text (string) et order (number)
     - description : description courte (string)
-    - servings : ${servings} (number)
+    - serving : ${serving} (number)
     - preparationTime : temps préparation en minutes (number)
     - cookingTime : temps cuisson en minutes (number)
 

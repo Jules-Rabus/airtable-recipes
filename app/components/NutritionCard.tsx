@@ -41,11 +41,11 @@ interface NutritionData {
 
 interface NutritionCardProps {
   nutrition: NutritionData;
-  servings: number;
+  serving: number;
   noCard?: boolean;
 }
 
-export function NutritionCard({ nutrition, servings, noCard = false }: NutritionCardProps) {
+export function NutritionCard({ nutrition, serving, noCard = false }: NutritionCardProps) {
   const formatValue = (value: number | undefined, unit: string) => {
     if (value === undefined || value === null) return "N/A";
     return `${value.toFixed(1)} ${unit}`;
@@ -126,7 +126,7 @@ export function NutritionCard({ nutrition, servings, noCard = false }: Nutrition
               Analyse Nutritionnelle
             </h2>
             <p className="text-xs text-muted-foreground">
-              Valeurs nutritionnelles pour {servings} portion{servings > 1 ? 's' : ''}
+              Valeurs nutritionnelles pour {serving} portion{serving > 1 ? 's' : ''}
             </p>
           </div>
 
@@ -265,7 +265,7 @@ export function NutritionCard({ nutrition, servings, noCard = false }: Nutrition
               Analyse Nutritionnelle
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              Valeurs nutritionnelles pour {servings} portion{servings > 1 ? 's' : ''}
+              Valeurs nutritionnelles pour {serving} portion{serving > 1 ? 's' : ''}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 sm:space-y-6">

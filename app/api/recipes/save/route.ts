@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     const fields = {
       Title: recipe.title,
       Description: recipe.description,
-      Servings: recipe.servings,
+      Serving: recipe.serving,
       PreparationTime: recipe.preparationTime,
       CookingTime: recipe.cookingTime,
     };
