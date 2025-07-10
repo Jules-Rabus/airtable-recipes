@@ -1,3 +1,43 @@
+export interface AirtableRecord {
+  id: string;
+  createdTime?: string;
+  fields?: Record<string, unknown>;
+}
+
+export interface IngredientRecord extends AirtableRecord {
+  fields?: {
+    Name?: string;
+  };
+}
+
+export interface RecipeRecord extends AirtableRecord {
+  fields?: {
+    Title?: string;
+    Description?: string;
+    Serving?: number;
+    PrepTimeMinutes?: number;
+    CookTimeMinutes?: number;
+  };
+}
+
+export interface JoinRecord extends AirtableRecord {
+  fields?: {
+    Recipe?: string[];
+    Ingredient?: string[];
+    Quantity?: number | string;
+    Unit?: string;
+    Identifier?: number;
+  };
+}
+
+export interface InstructionRecord extends AirtableRecord {
+  fields?: {
+    Recipe?: string[];
+    Instruction?: string;
+    Order?: number;
+  };
+}
+
 export interface NutritionData {
   calories: number;
   protein: number;

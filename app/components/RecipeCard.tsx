@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { RecipeCard as RecipeType } from "@/schemas/api";
-import { saveRecipe, deleteRecipe } from "@/lib/apiClient";
+import { saveRecipe, deleteRecipe } from "@/lib/api/recipes";
 
 interface RecipeCardProps {
   recipe: RecipeType;
