@@ -122,35 +122,77 @@ export const generateRecipes = async (payload: { ingredients: { id: string; name
 }
 
 export const getRecipes = async (): Promise<RecipeCard[]> => {
-  const recipes = await getRecords(AirtableTables.RECIPES, { sort: [{ field: 'Title', direction: 'asc' }] })
-  const joinRecords = await fetchRecipeIngredientJoins()
-  const ingredientsTable = await getRecords(AirtableTables.INGREDIENTS)
-  const ingredientMap = Object.fromEntries((ingredientsTable as IngredientRecord[]).map(ing => [ing.id, ing.fields?.Name || ing.id]))
-  const instructionsTable = await fetchRecipeInstructions()
-  return (recipes as RecipeRecord[]).map(recipe => {
-    const recipeIngredients = joinRecords
-        .filter(jr => Array.isArray(jr.fields?.Recipe) && jr.fields.Recipe.includes(recipe.id))
-        .map(jr => {
-          const quantityStr = jr.fields?.Quantity
-          let quantity = 0
-          let unit = ''
-          if (typeof quantityStr === 'number') quantity = quantityStr
-          else if (typeof quantityStr === 'string') {
-            const match = quantityStr.match(/([\d.,]+)\s*(.*)/)
-            if (match) {
-              quantity = parseFloat(match[1].replace(',', '.'))
-              unit = match[2].trim()
-            }
-          }
-          const ingredientId = Array.isArray(jr.fields?.Ingredient) ? jr.fields.Ingredient[0] : jr.fields?.Ingredient
-          return {id: ingredientId, name: ingredientId ? ingredientMap[ingredientId] || '' : '', quantity, unit}
-        })
-    const recipeInstructions = instructionsTable
-        .filter(inst => Array.isArray(inst.fields?.Recipe) && inst.fields.Recipe.includes(recipe.id))
-        .sort((a, b) => (a.fields?.Order || 0) - (b.fields?.Order || 0))
-        .map(inst => ({text: inst.fields?.Instruction || '', order: inst.fields?.Order || 0}))
-    return {...recipe, ingredients: recipeIngredients, instructions: recipeInstructions} as RecipeCard
-  })
+  const recipeRecords = await getRecords(AirtableTables.RECIPES, {
+    sort: [{ field: 'Title', direction: 'asc' }]
+  }) as RecipeRecord[]
+
+  const parseQuantity = (
+    input: number | string | undefined
+  ): { quantity: number; unit: string } => {
+    if (typeof input === 'number') return { quantity: input, unit: '' }
+    if (typeof input === 'string') {
+      const match = input.match(/([\d.,]+)\s*(.*)/)
+      if (match) {
+        return { quantity: parseFloat(match[1].replace(',', '.')), unit: match[2].trim() }
+      }
+    }
+    return { quantity: 0, unit: '' }
+  }
+
+  const cards = await Promise.all(
+    recipeRecords.map(async recipe => {
+      const ingredientJoins = await fetchRecipeIngredientJoins(recipe.id)
+      const ingredientIds = ingredientJoins
+        .map(join =>
+          Array.isArray(join.fields?.Ingredient)
+            ? join.fields.Ingredient[0]
+            : join.fields?.Ingredient
+        )
+        .filter((id): id is string => Boolean(id))
+
+      let ingredientMap: Record<string, string> = {}
+      if (ingredientIds.length > 0) {
+        const formula = `OR(${ingredientIds
+          .map(id => `RECORD_ID()='${id}'`)
+          .join(',')})`
+        const ingredients = await getRecords(AirtableTables.INGREDIENTS, {
+          filterByFormula: formula
+        }) as IngredientRecord[]
+        ingredientMap = Object.fromEntries(
+          ingredients.map(ing => [ing.id, ing.fields?.Name || ing.id])
+        )
+      }
+
+      const ingredients = ingredientJoins.map(join => {
+        const { quantity, unit } = parseQuantity(join.fields?.Quantity)
+        const ingredientId = Array.isArray(join.fields?.Ingredient)
+          ? join.fields.Ingredient[0]
+          : join.fields?.Ingredient
+        return {
+          id: ingredientId,
+          name: ingredientId ? ingredientMap[ingredientId] || '' : '',
+          quantity,
+          unit
+        }
+      })
+
+      const instructionRecords = await fetchRecipeInstructions(recipe.id)
+      const instructions = instructionRecords
+        .map(inst => ({
+          text: inst.fields?.Instruction || '',
+          order: inst.fields?.Order || 0
+        }))
+        .sort((a, b) => a.order - b.order)
+
+      return {
+        ...recipe,
+        ingredients,
+        instructions
+      } as RecipeCard
+    })
+  )
+
+  return cards
 }
 
 export const getRecipe = async (id: string): Promise<Recipe> => {
