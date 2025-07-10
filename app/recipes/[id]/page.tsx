@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getRecipe, deleteRecipe, analyzeRecipeNutrition } from "@/lib/apiClient";
-import { NutritionData, Recipe, RecipeIngredientRecord, RecipeInstructionRecord } from "@/lib/types";
+import { NutritionData, Recipe } from "@/lib/types";
 
 export default function RecipeDetailPage() {
   const params = useParams();
