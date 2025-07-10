@@ -23,7 +23,7 @@ export const getRecords = async (tableName: string, options: Record<string, any>
                 params.append('sort[0][direction]', sort.direction);
             });
         }
-        
+
         const response = await AirtableClient.get(`${tableName}?${params}`);
         return response.data?.records || [];
     } catch (error) {

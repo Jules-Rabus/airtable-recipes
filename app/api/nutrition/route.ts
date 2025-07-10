@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { ChatOpenAI } from '@langchain/openai';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { z } from 'zod';
+import {MistralAI} from "@langchain/mistralai";
 
 export const runtime = 'edge';
 
@@ -47,15 +47,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Ingredients are required' }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.MISTRAL_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: 'Clé API OpenAI non définie' }, { status: 500 });
+      return NextResponse.json({ error: 'Clé API MISTRAL non définie' }, { status: 500 });
     }
 
     const agent = createReactAgent({
-      llm: new ChatOpenAI({
-        openAIApiKey: apiKey,
-        model: 'gpt-4-turbo',
+      llm: new MistralAI({
+        model: 'mistral-medium-latest',
         temperature: 0.1,
       }),
       tools: [],
