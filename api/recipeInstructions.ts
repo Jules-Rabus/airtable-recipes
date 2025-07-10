@@ -1,18 +1,22 @@
 'use server'
 
-import { getRecords, createRecords, GetRecordsOptions } from '@/lib/axios'
+import {createRecords, getRecords, GetRecordsOptions} from '@/lib/axios'
 import { AirtableTables } from '@/constants/airtable'
 import { InstructionRecord } from '@/lib/types'
 
 export const fetchRecipeInstructions = async (
-  recipeId?: string
+    recipeId?: string
 ): Promise<InstructionRecord[]> => {
   const options: GetRecordsOptions = {}
   if (recipeId) {
-    options.filterByFormula = `FIND("${recipeId}", ARRAYJOIN({Recipe}, ","))`
-    options.sort = [{ field: 'Order', direction: 'asc' }]
+    options.filterByFormula = `{Recipes} = "${recipeId}"`
   }
-  const records = await getRecords(AirtableTables.RECIPE_INSTRUCTIONS, options)
+  options.sort = [{ field: 'Order', direction: 'asc' }]
+
+  const records = await getRecords(
+      AirtableTables.RECIPE_INSTRUCTIONS,
+      options
+  )
   return records as InstructionRecord[]
 }
 

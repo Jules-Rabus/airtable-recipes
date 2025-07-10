@@ -8,6 +8,7 @@ import {generateObject} from 'ai'
 import {mistral} from '@ai-sdk/mistral'
 import {
   IngredientRecord,
+  InstructionRecord,
   NutritionData,
   Recipe,
   RecipeIngredientRecord,
@@ -122,106 +123,57 @@ export const generateRecipes = async (payload: { ingredients: { id: string; name
 }
 
 export const getRecipes = async (): Promise<RecipeCard[]> => {
-  const recipeRecords = await getRecords(AirtableTables.RECIPES, {
-    sort: [{ field: 'Title', direction: 'asc' }]
-  }) as RecipeRecord[]
+  const recipes = await getRecords(
+      AirtableTables.RECIPES,
+      { sort: [{ field: 'Title', direction: 'asc' }] }
+  ) as RecipeRecord[];
 
-  const parseQuantity = (
-    input: number | string | undefined
-  ): { quantity: number; unit: string } => {
-    if (typeof input === 'number') return { quantity: input, unit: '' }
-    if (typeof input === 'string') {
-      const match = input.match(/([\d.,]+)\s*(.*)/)
-      if (match) {
-        return { quantity: parseFloat(match[1].replace(',', '.')), unit: match[2].trim() }
-      }
-    }
-    return { quantity: 0, unit: '' }
-  }
+  const [ingredients, instructions] = await Promise.all([
+    fetchRecipeIngredientJoins(),
+    fetchRecipeInstructions()
+  ]) as [IngredientRecord[], InstructionRecord[]]
 
-  const cards = await Promise.all(
-    recipeRecords.map(async recipe => {
-      const ingredientJoins = await fetchRecipeIngredientJoins(recipe.id)
-      const ingredientIds = ingredientJoins
-        .map(join =>
-          Array.isArray(join.fields?.Ingredient)
-            ? join.fields.Ingredient[0]
-            : join.fields?.Ingredient
-        )
-        .filter((id): id is string => Boolean(id))
-
-      let ingredientMap: Record<string, string> = {}
-      if (ingredientIds.length > 0) {
-        const formula = `OR(${ingredientIds
-          .map(id => `RECORD_ID()='${id}'`)
-          .join(',')})`
-        const ingredients = await getRecords(AirtableTables.INGREDIENTS, {
-          filterByFormula: formula
-        }) as IngredientRecord[]
-        ingredientMap = Object.fromEntries(
-          ingredients.map(ing => [ing.id, ing.fields?.Name || ing.id])
-        )
-      }
-
-      const ingredients = ingredientJoins.map(join => {
-        const { quantity, unit } = parseQuantity(join.fields?.Quantity)
-        const ingredientId = Array.isArray(join.fields?.Ingredient)
-          ? join.fields.Ingredient[0]
-          : join.fields?.Ingredient
-        return {
-          id: ingredientId,
-          name: ingredientId ? ingredientMap[ingredientId] || '' : '',
-          quantity,
-          unit
-        }
-      })
-
-      const instructionRecords = await fetchRecipeInstructions(recipe.id)
-      const instructions = instructionRecords
-        .map(inst => ({
-          text: inst.fields?.Instruction || '',
-          order: inst.fields?.Order || 0
-        }))
-        .sort((a, b) => a.order - b.order)
-
-      return {
-        ...recipe,
-        ingredients,
-        instructions
-      } as RecipeCard
+  const ingredientsMap = new Map<string, IngredientRecord[]>()
+    ingredients.forEach(ing => {
+        const refs = ing.fields.Recipes as string[]
+        refs.forEach(id => {
+        if (!ingredientsMap.has(id)) ingredientsMap.set(id, [])
+        ingredientsMap.get(id)!.push(ing)
+        })
     })
-  )
+  const instructionsMap = new Map<string, InstructionRecord[]>()
+  instructions.forEach(instr => {
+    const refs = instr.fields.Recipes as string[]
+    refs.forEach(id => {
+      if (!instructionsMap.has(id)) instructionsMap.set(id, [])
+      instructionsMap.get(id)!.push(instr)
+    })
+  })
 
-  return cards
+  return recipes.map(r => ({
+    id: r.id,
+    createdTime: r.createdTime,
+    fields: r.fields,
+    title: r.fields.Title,
+    description: r.fields.Description,
+    serving: r.fields.Serving,
+    preparationTime: r.fields?.PrepTimeMinutes,
+    cookingTime: r.fields?.CookTimeMinutes,
+    ingredients: ingredientsMap.get(r.id),
+    instructions: instructionsMap.get(r.id)
+  }))
 }
 
 export const getRecipe = async (id: string): Promise<Recipe> => {
   const recipe = await getRecord(AirtableTables.RECIPES, id)
-  const recipeIngredientJoins = await fetchRecipeIngredientJoins(id)
-  const ingredientIds = recipeIngredientJoins
-    .map(join => (Array.isArray(join.fields?.Ingredient) ? join.fields.Ingredient[0] : join.fields?.Ingredient))
-    .filter((ing): ing is string => Boolean(ing))
-
-  let ingredientMap: Record<string, string> = {}
-  if (ingredientIds.length > 0) {
-    const formula = `OR(${ingredientIds.map(i => `RECORD_ID()='${i}'`).join(',')})`
-    const ingredientRecords = await getRecords(AirtableTables.INGREDIENTS, { filterByFormula: formula })
-    ingredientMap = Object.fromEntries((ingredientRecords as IngredientRecord[]).map(ing => [ing.id, ing.fields?.Name || ing.id]))
-  }
-
-  const recipeIngredientJoinsWithNames = recipeIngredientJoins.map(join => {
-    const ingredientId = Array.isArray(join.fields?.Ingredient) ? join.fields.Ingredient[0] : join.fields?.Ingredient
-    const label = ingredientId ? ingredientMap[ingredientId] || `Ingrédient ${join.fields?.Identifier}` : `Ingrédient ${join.fields?.Identifier}`
-    return { ...join, ingredientName: label }
-  }) as RecipeIngredientRecord[]
-
-  const recipeInstructionJoins = await fetchRecipeInstructions(id)
+  const recipeIngredientJoins = await fetchRecipeIngredientJoins(recipe.ID)
+  const recipeInstructionJoins = await fetchRecipeInstructions(recipe.ID)
 
   return {
     id: (recipe as RecipeRecord).id,
     createdTime: (recipe as RecipeRecord).createdTime,
     fields: (recipe as RecipeRecord).fields,
-    recipe_ingredient_quantity_records: recipeIngredientJoinsWithNames,
+    recipe_ingredient_quantity_records: recipeIngredientJoins as RecipeIngredientRecord[],
     recipe_instruction_records: recipeInstructionJoins as RecipeInstructionRecord[]
   }
 }

@@ -19,8 +19,9 @@ const recipeIngredientSchema = z.object({
 });
 
 const instructionSchema = z.object({
-  text: z.string(),
+  instruction: z.string(),
   order: z.number(),
+  recipes: z.array(z.string()).optional(),
 });
 
 export const recipeCardSchema = z.object({

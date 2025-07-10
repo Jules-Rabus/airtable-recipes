@@ -4,11 +4,7 @@ export interface AirtableRecord {
   fields?: Record<string, unknown>;
 }
 
-export interface IngredientRecord extends AirtableRecord {
-  fields?: {
-    Name?: string;
-  };
-}
+
 
 export interface RecipeRecord extends AirtableRecord {
   fields?: {
@@ -17,12 +13,20 @@ export interface RecipeRecord extends AirtableRecord {
     Serving?: number;
     PrepTimeMinutes?: number;
     CookTimeMinutes?: number;
+    Difficulty?: string;
+    Cuisine?: string;
+  };
+}
+
+export interface IngredientRecord extends AirtableRecord {
+  fields?: {
+    Name?: string;
   };
 }
 
 export interface JoinRecord extends AirtableRecord {
   fields?: {
-    Recipe?: string[];
+    Recipes?: string[];
     Ingredient?: string[];
     Quantity?: number | string;
     Unit?: string;
@@ -32,7 +36,7 @@ export interface JoinRecord extends AirtableRecord {
 
 export interface InstructionRecord extends AirtableRecord {
   fields?: {
-    Recipe?: string[];
+    Recipes?: string[];
     Instruction?: string;
     Order?: number;
   };
@@ -79,7 +83,7 @@ export interface RecipeIngredientRecord {
   createdTime: string;
   fields: {
     Identifier: number;
-    Recipe: string[];
+    Recipes: string[];
     Ingredient: string[];
     Quantity: number;
     Unit: string;
@@ -93,7 +97,7 @@ export interface RecipeInstructionRecord {
   fields: {
     Instruction: string;
     Order: number;
-    Recipe: string[];
+    Recipes: string[];
   };
 }
 

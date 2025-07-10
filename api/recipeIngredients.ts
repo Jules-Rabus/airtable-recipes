@@ -9,7 +9,7 @@ export const fetchRecipeIngredientJoins = async (
 ): Promise<JoinRecord[]> => {
   const options: GetRecordsOptions = {}
   if (recipeId) {
-    options.filterByFormula = `FIND("${recipeId}", ARRAYJOIN({Recipe}, ","))`
+    options.filterByFormula = `{Recipes} = "${recipeId}"`
   }
   const records = await getRecords(AirtableTables.RECIPE_INGREDIENT, options)
   return records as JoinRecord[]
