@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createRecord, createRecords } from '@/lib/axios';
 import { AirtableTables } from '@/constants/airtable';
-import { RecipeType } from "@/schemas/recipe";
+import { RecipeCard } from '@/schemas/api';
 
 export async function POST(req: Request) {
   try {
-    const { recipe }: { recipe: RecipeType } = await req.json();
+    const { recipe }: { recipe: RecipeCard } = await req.json();
     
     if (!recipe) {
       return NextResponse.json({ error: 'Recipe is required' }, { status: 400 });
     }
-    // Map recipe fields to Airtable fields (remove Ingredients)
     const fields = {
       Title: recipe.title,
       Description: recipe.description,
@@ -20,32 +19,22 @@ export async function POST(req: Request) {
     };
     const created = await createRecord(AirtableTables.RECIPES, fields);
 
-    // Save ingredients to join table
     if (Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0) {
       const joinRecords = recipe.ingredients
-        .map((ingredient: any) => ({
+        .filter(ing => ing.id)
+        .map(ing => ({
           Recipe: [created.id],
-          Ingredient: [ingredient.id],
-          Quantity: ingredient.quantity,
-          Unit: ingredient.unit,
+          Ingredient: [ing.id as string],
+          Quantity: ing.quantity,
+          Unit: ing.unit,
         }));
-      
-        if (joinRecords.length !== recipe.ingredients.length) {
-        console.warn('Some ingredients are missing an id and will not be saved to the join table.');
-      }
       if (joinRecords.length > 0) {
-        try {
-          await createRecords(AirtableTables.RECIPE_INGREDIENT_QUANTITY, joinRecords);
-        } catch (err) {
-          console.error('Error creating join records:', err, joinRecords);
-          return NextResponse.json({ error: 'Failed to save recipe ingredients', details: err }, { status: 500 });
-        }
+        await createRecords(AirtableTables.RECIPE_INGREDIENT_QUANTITY, joinRecords);
       }
     }
 
-    // Save instructions to join table
     if (Array.isArray(recipe.instructions) && recipe.instructions.length > 0) {
-      const instructionRecords = recipe.instructions.map((inst: any) => ({
+      const instructionRecords = recipe.instructions.map(inst => ({
         Instruction: inst.text,
         Order: inst.order,
         Recipe: [created.id],
@@ -53,7 +42,8 @@ export async function POST(req: Request) {
       await createRecords(AirtableTables.RECIPE_INSTRUCTIONS, instructionRecords);
     }
     return NextResponse.json(created);
-  } catch (error) {
-    return NextResponse.json({ error: error?.message || 'Unknown error' }, { status: 500 });
+  } catch (err) {
+    const error = err as Error;
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
-} 
+}

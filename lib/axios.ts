@@ -8,12 +8,17 @@ const AirtableClient = axios.create({
     },
 });
 
-// Get all records from a table
-export const getRecords = async (tableName: string, options: Record<string, any> = {}) => {
+export interface GetRecordsOptions {
+  maxRecords?: string
+  view?: string
+  filterByFormula?: string
+  sort?: Array<{ field: string; direction: string }>
+}
+
+export const getRecords = async (tableName: string, options: GetRecordsOptions = {}) => {
     try {
         const params = new URLSearchParams();
         
-        // Add optional parameters
         if (options.maxRecords) params.append('maxRecords', options.maxRecords);
         if (options.view) params.append('view', options.view);
         if (options.filterByFormula) params.append('filterByFormula', options.filterByFormula);
@@ -26,70 +31,95 @@ export const getRecords = async (tableName: string, options: Record<string, any>
 
         const response = await AirtableClient.get(`${tableName}?${params}`);
         return response.data?.records || [];
-    } catch (error) {
-        console.error('Error fetching records:', error.response?.data || error.message);
+    } catch (err) {
+        const error = err as unknown;
+        if (axios.isAxiosError(error)) {
+            console.error('Error fetching records:', error.response?.data || error.message);
+        } else {
+            console.error('Error fetching records:', error);
+        }
         throw error;
     }
 };
 
-// Get a single record by ID
 export const getRecord = async (tableName: string, recordId: string) => {
     try {
         const response = await AirtableClient.get(`${tableName}/${recordId}`);
         return response.data;
-    } catch (error) {
-        console.error('Error fetching record:', error.response?.data || error.message);
+    } catch (err) {
+        const error = err as unknown;
+        if (axios.isAxiosError(error)) {
+            console.error('Error fetching record:', error.response?.data || error.message);
+        } else {
+            console.error('Error fetching record:', error);
+        }
         throw error;
     }
 };
 
-// Create a new record
-export const createRecord = async (tableName: string, fields: Record<string, any>) => {
+export const createRecord = async (tableName: string, fields: Record<string, unknown>) => {
     try {
         const response = await AirtableClient.post(tableName, {
             fields: fields
         });
         return response.data;
-    } catch (error) {
-        console.error('Error creating record:', error.response?.data || error.message);
+    } catch (err) {
+        const error = err as unknown;
+        if (axios.isAxiosError(error)) {
+            console.error('Error creating record:', error.response?.data || error.message);
+        } else {
+            console.error('Error creating record:', error);
+        }
         throw error;
     }
 };
 
-// Create multiple records at once
-export const createRecords = async (tableName: string, recordsArray: Array<Record<string, any>>) => {
+export const createRecords = async (tableName: string, recordsArray: Array<Record<string, unknown>>) => {
     try {
         const records = recordsArray.map(fields => ({ fields }));
         const response = await AirtableClient.post(tableName, {
             records: records
         });
         return response.data;
-    } catch (error) {
-        console.error('Error creating records:', error.response?.data || error.message);
+    } catch (err) {
+        const error = err as unknown;
+        if (axios.isAxiosError(error)) {
+            console.error('Error creating records:', error.response?.data || error.message);
+        } else {
+            console.error('Error creating records:', error);
+        }
         throw error;
     }
 };
 
-// Update a record
-export const updateRecord = async (tableName: string, recordId: string, fields: Record<string, any>) => {
+export const updateRecord = async (tableName: string, recordId: string, fields: Record<string, unknown>) => {
     try {
         const response = await AirtableClient.patch(`${tableName}/${recordId}`, {
             fields: fields
         });
         return response.data;
-    } catch (error) {
-        console.error('Error updating record:', error.response?.data || error.message);
+    } catch (err) {
+        const error = err as unknown;
+        if (axios.isAxiosError(error)) {
+            console.error('Error updating record:', error.response?.data || error.message);
+        } else {
+            console.error('Error updating record:', error);
+        }
         throw error;
     }
 };
 
-// Delete a record
 export const deleteRecord = async (tableName: string, recordId: string) => {
     try {
         const response = await AirtableClient.delete(`${tableName}/${recordId}`);
         return response.data;
-    } catch (error) {
-        console.error('Error deleting record:', error.response?.data || error.message);
+    } catch (err) {
+        const error = err as unknown;
+        if (axios.isAxiosError(error)) {
+            console.error('Error deleting record:', error.response?.data || error.message);
+        } else {
+            console.error('Error deleting record:', error);
+        }
         throw error;
     }
 };

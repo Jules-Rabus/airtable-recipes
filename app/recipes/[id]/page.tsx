@@ -373,7 +373,6 @@ export default function RecipeDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <Card className="modern-card">
-              <Card className="modern-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ChefHat className="w-5 h-5" />
