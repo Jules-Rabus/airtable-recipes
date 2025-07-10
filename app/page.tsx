@@ -15,7 +15,7 @@ import { LoadingSpinner } from "./components/LoadingSpinner";
 
 import React from "react";
 import { RecipeCard } from "./components/RecipeCard";
-import { fetchIngredientOptions, generateRecipes } from "@/lib/api";
+import { fetchIngredientOptions, generateRecipes } from "@/app/api/helpers";
 import { IngredientOption, RecipeCard as RecipeType } from "@/schemas/api";
 
 import { toast } from "sonner";

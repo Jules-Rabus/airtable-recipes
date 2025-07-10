@@ -12,11 +12,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'Recipe ID is required' }, { status: 400 });
     }
 
-    // Supprimer la recette principale
     await deleteRecord(AirtableTables.RECIPES, recipeId);
-
-    // Note: Les enregistrements liés (ingrédients, instructions) seront supprimés automatiquement
-    // par Airtable grâce aux relations configurées
 
     return NextResponse.json({ success: true, message: 'Recipe deleted successfully' });
   } catch (error) {

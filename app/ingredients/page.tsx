@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { fetchIngredientOptions } from "@/lib/api";
+import { fetchIngredientOptions } from "@/app/api/helpers";
 import { IngredientOption } from "@/schemas/api";
 
 export default function IngredientsPage() {

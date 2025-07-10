@@ -2,12 +2,11 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getRecords } from '@/lib/axios';
 import { AirtableTables } from '@/constants/airtable';
-import {generateObject} from "ai";
-import {mistral} from "@ai-sdk/mistral";
+import { generateObject } from 'ai';
+import { mistral } from '@ai-sdk/mistral';
 
 export const runtime = 'edge';
 
-// Define types for Airtable records
 interface AirtableRecord {
   id: string;
   createdTime?: string;
@@ -74,21 +73,15 @@ const recipesSchema = z.object({
 
 export async function GET() {
   try {
-    // Fetch all recipes
     const recipes = await getRecords(AirtableTables.RECIPES, {
       sort: [{ field: 'Title', direction: 'asc' }],
     }) as RecipeRecord[];
-    // Fetch all join records
     const joinRecords = await getRecords(AirtableTables.RECIPE_INGREDIENT_QUANTITY) as JoinRecord[];
-    // Fetch all ingredients
     const ingredientsTable = await getRecords(AirtableTables.INGREDIENTS) as IngredientRecord[];
-    // Map ingredient ID to name
     const ingredientMap = Object.fromEntries(
       ingredientsTable.map((ing: IngredientRecord) => [ing.id, ing.fields?.Name || ing.id])
     );
-    // Fetch all instructions
     const instructionsTable = await getRecords(AirtableTables.RECIPE_INSTRUCTIONS) as InstructionRecord[];
-    // For each recipe, attach its ingredients and instructions
     const recipesWithIngredients = recipes.map((recipe: RecipeRecord) => {
       const recipeIngredients = joinRecords.filter((jr: JoinRecord) => {
         return Array.isArray(jr.fields?.Recipe) && jr.fields.Recipe.includes(recipe.id);
@@ -113,7 +106,6 @@ export async function GET() {
           unit,
         };
       });
-      // Fetch and order instructions for this recipe
       const recipeInstructions = instructionsTable
         .filter((inst: InstructionRecord) => Array.isArray(inst.fields?.Recipe) && inst.fields.Recipe.includes(recipe.id))
         .sort((a: InstructionRecord, b: InstructionRecord) => (a.fields?.Order || 0) - (b.fields?.Order || 0))
