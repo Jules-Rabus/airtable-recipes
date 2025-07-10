@@ -76,7 +76,7 @@ export async function GET() {
     const recipes = await getRecords(AirtableTables.RECIPES, {
       sort: [{ field: 'Title', direction: 'asc' }],
     }) as RecipeRecord[];
-    const joinRecords = await getRecords(AirtableTables.RECIPE_INGREDIENT_QUANTITY) as JoinRecord[];
+    const joinRecords = await getRecords(AirtableTables.RECIPE_INGREDIENT) as JoinRecord[];
     const ingredientsTable = await getRecords(AirtableTables.INGREDIENTS) as IngredientRecord[];
     const ingredientMap = Object.fromEntries(
       ingredientsTable.map((ing: IngredientRecord) => [ing.id, ing.fields?.Name || ing.id])

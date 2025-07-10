@@ -83,7 +83,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(object);
   } catch (error) {
-    console.log('Error analyzing nutrition:', error);
+    console.error('Error analyzing nutrition:', error);
     return NextResponse.json({ error: (error as Error)?.message || 'Erreur inconnue' }, { status: 500 });
   }
 } 

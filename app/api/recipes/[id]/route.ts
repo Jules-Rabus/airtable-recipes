@@ -35,7 +35,7 @@ interface InstructionRecord extends AirtableRecord {
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   try {
     const recipe = await getRecord(AirtableTables.RECIPES, params.id);
-    const ingredientJoins = await getRecords(AirtableTables.RECIPE_INGREDIENT_QUANTITY) as JoinRecord[];
+    const ingredientJoins = await getRecords(AirtableTables.RECIPE_INGREDIENT) as JoinRecord[];
     const recipeIngredientJoins = ingredientJoins.filter(
       (jr: JoinRecord) => Array.isArray(jr.fields?.Recipe) && jr.fields.Recipe.includes(params.id)
     );

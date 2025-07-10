@@ -7,7 +7,6 @@ export async function GET() {
         const ingredients = await getRecords(AirtableTables.INGREDIENTS, {
             sort: [{ field: 'Name', direction: 'asc' }],
         });
-        console.log('Ingredients:', ingredients);
         return NextResponse.json(ingredients);
     } catch (error) {
         console.error('Error fetching ingredients:', error);
