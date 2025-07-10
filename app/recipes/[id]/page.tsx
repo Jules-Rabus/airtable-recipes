@@ -36,7 +36,6 @@ export default function RecipeDetailPage() {
     const fetchRecipe = async () => {
       try {
         const data = await getRecipe(recipeId);
-        console.log('Fetched recipe:', data);
         setRecipe(data);
       } catch (err) {
         const error = err as Error;

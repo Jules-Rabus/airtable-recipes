@@ -155,17 +155,26 @@ export const getRecipes = async (): Promise<RecipeCard[]> => {
 
 export const getRecipe = async (id: string): Promise<Recipe> => {
   const recipe = await getRecord(AirtableTables.RECIPES, id)
-  const ingredientJoins = await fetchRecipeIngredientJoins()
-  const recipeIngredientJoins = ingredientJoins.filter(jr => Array.isArray(jr.fields?.Recipe) && jr.fields.Recipe.includes(id))
-  const allIngredients = await getRecords(AirtableTables.INGREDIENTS)
-  const ingredientMap = Object.fromEntries((allIngredients as IngredientRecord[]).map(ing => [ing.id, ing.fields?.Name || ing.id]))
-  const instructionJoins = await fetchRecipeInstructions()
-  console.log('instructionJoins', instructionJoins)
-  const recipeInstructionJoins = instructionJoins.filter(ir => Array.isArray(ir.fields?.Recipe) && ir.fields.Recipe.includes(id))
+  const recipeIngredientJoins = await fetchRecipeIngredientJoins(id)
+  const ingredientIds = recipeIngredientJoins
+    .map(join => (Array.isArray(join.fields?.Ingredient) ? join.fields.Ingredient[0] : join.fields?.Ingredient))
+    .filter((ing): ing is string => Boolean(ing))
+
+  let ingredientMap: Record<string, string> = {}
+  if (ingredientIds.length > 0) {
+    const formula = `OR(${ingredientIds.map(i => `RECORD_ID()='${i}'`).join(',')})`
+    const ingredientRecords = await getRecords(AirtableTables.INGREDIENTS, { filterByFormula: formula })
+    ingredientMap = Object.fromEntries((ingredientRecords as IngredientRecord[]).map(ing => [ing.id, ing.fields?.Name || ing.id]))
+  }
+
   const recipeIngredientJoinsWithNames = recipeIngredientJoins.map(join => {
     const ingredientId = Array.isArray(join.fields?.Ingredient) ? join.fields.Ingredient[0] : join.fields?.Ingredient
-    return { ...join, ingredientName: ingredientId ? ingredientMap[ingredientId] || `Ingrédient ${join.fields?.Identifier}` : `Ingrédient ${join.fields?.Identifier}` }
+    const label = ingredientId ? ingredientMap[ingredientId] || `Ingrédient ${join.fields?.Identifier}` : `Ingrédient ${join.fields?.Identifier}`
+    return { ...join, ingredientName: label }
   }) as RecipeIngredientRecord[]
+
+  const recipeInstructionJoins = await fetchRecipeInstructions(id)
+
   return {
     id: (recipe as RecipeRecord).id,
     createdTime: (recipe as RecipeRecord).createdTime,

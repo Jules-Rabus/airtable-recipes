@@ -15,31 +15,45 @@ export interface GetRecordsOptions {
   sort?: Array<{ field: string; direction: string }>
 }
 
-export const getRecords = async (tableName: string, options: GetRecordsOptions = {}) => {
-    try {
-        const params = new URLSearchParams();
-        
-        if (options.maxRecords) params.append('maxRecords', options.maxRecords);
-        if (options.view) params.append('view', options.view);
-        if (options.filterByFormula) params.append('filterByFormula', options.filterByFormula);
-        if (options.sort) {
-            options.sort.forEach(sort => {
-                params.append('sort[0][field]', sort.field);
-                params.append('sort[0][direction]', sort.direction);
-            });
-        }
+export const getRecords = async (
+  tableName: string,
+  options: GetRecordsOptions = {}
+) => {
+  try {
+    const baseParams = new URLSearchParams();
 
-        const response = await AirtableClient.get(`${tableName}?${params}`);
-        return response.data?.records || [];
-    } catch (err) {
-        const error = err as unknown;
-        if (axios.isAxiosError(error)) {
-            console.error('Error fetching records:', error.response?.data || error.message);
-        } else {
-            console.error('Error fetching records:', error);
-        }
-        throw error;
+    if (options.maxRecords) baseParams.append('maxRecords', options.maxRecords);
+    if (options.view) baseParams.append('view', options.view);
+    if (options.filterByFormula) baseParams.append('filterByFormula', options.filterByFormula);
+    if (options.sort) {
+      options.sort.forEach(sort => {
+        baseParams.append('sort[0][field]', sort.field);
+        baseParams.append('sort[0][direction]', sort.direction);
+      });
     }
+
+    const records: unknown[] = [];
+    let offset: string | undefined;
+
+    do {
+      const params = new URLSearchParams(baseParams);
+      if (offset) params.append('offset', offset);
+      const response = await AirtableClient.get(`${tableName}?${params.toString()}`);
+      records.push(...(response.data?.records || []));
+      offset = response.data?.offset;
+    } while (offset && (!options.maxRecords || records.length < Number(options.maxRecords)));
+
+    if (options.maxRecords) return records.slice(0, Number(options.maxRecords));
+    return records;
+  } catch (err) {
+    const error = err as unknown;
+    if (axios.isAxiosError(error)) {
+      console.error('Error fetching records:', error.response?.data || error.message);
+    } else {
+      console.error('Error fetching records:', error);
+    }
+    throw error;
+  }
 };
 
 export const getRecord = async (tableName: string, recordId: string) => {
