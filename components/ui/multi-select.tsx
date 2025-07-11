@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -50,7 +50,7 @@ const multiSelectVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 /**
@@ -110,7 +110,6 @@ interface MultiSelectProps
    * If true, renders the multi-select component as a child of another component.
    * Optional, defaults to false.
    */
-  asChild?: boolean;
 
   /**
    * Additional class names to apply custom styles to the multi-select component.
@@ -128,7 +127,10 @@ interface MultiSelectProps
    * Callback for adding a new option and selecting it immediately.
    * Receives the new option object and a function to update selected values.
    */
-  onAddAndSelectOption?: (option: { label: string; value: string }, select: (values: string[]) => void) => void;
+  onAddAndSelectOption?: (
+    option: { label: string; value: string },
+    select: (values: string[]) => void,
+  ) => void;
 }
 
 export const MultiSelect = React.forwardRef<
@@ -147,19 +149,20 @@ export const MultiSelect = React.forwardRef<
       animation = 0,
       maxCount = 3,
       modalPopover = false,
-      asChild = false,
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [newOptionValue, setNewOptionValue] = React.useState("");
-    const [selectedValues, setSelectedValues] = React.useState<string[]>(() => defaultValue);
+    const [selectedValues, setSelectedValues] = React.useState<string[]>(
+      () => defaultValue,
+    );
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isAnimating, setIsAnimating] = React.useState(false);
 
     const handleInputKeyDown = (
-      event: React.KeyboardEvent<HTMLInputElement>
+      event: React.KeyboardEvent<HTMLInputElement>,
     ) => {
       if (event.key === "Enter") {
         setIsPopoverOpen(true);
@@ -224,7 +227,9 @@ export const MultiSelect = React.forwardRef<
       }
     };
 
-    const handleAddOptionKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleAddOptionKeyDown = (
+      e: React.KeyboardEvent<HTMLInputElement>,
+    ) => {
       if (e.key === "Enter") {
         e.preventDefault();
         handleAddOption();
@@ -244,7 +249,7 @@ export const MultiSelect = React.forwardRef<
             onClick={handleTogglePopover}
             className={cn(
               "flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto",
-              className
+              className,
             )}
           >
             {selectedValues.length > 0 ? (
@@ -258,7 +263,7 @@ export const MultiSelect = React.forwardRef<
                         key={value}
                         className={cn(
                           isAnimating ? "animate-bounce" : "",
-                          multiSelectVariants({ variant })
+                          multiSelectVariants({ variant }),
                         )}
                         style={{ animationDuration: `${animation}s` }}
                       >
@@ -281,7 +286,7 @@ export const MultiSelect = React.forwardRef<
                       className={cn(
                         "bg-transparent text-foreground border-foreground/1 hover:bg-transparent",
                         isAnimating ? "animate-bounce" : "",
-                        multiSelectVariants({ variant })
+                        multiSelectVariants({ variant }),
                       )}
                       style={{ animationDuration: `${animation}s` }}
                     >
@@ -340,7 +345,10 @@ export const MultiSelect = React.forwardRef<
               size="sm"
               variant="secondary"
               onClick={handleAddOption}
-              disabled={!newOptionValue.trim() || options.some((opt) => opt.value === newOptionValue.trim())}
+              disabled={
+                !newOptionValue.trim() ||
+                options.some((opt) => opt.value === newOptionValue.trim())
+              }
             >
               Add
             </Button>
@@ -363,7 +371,7 @@ export const MultiSelect = React.forwardRef<
                       "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
                       selectedValues.length === options.length
                         ? "bg-primary text-primary-foreground"
-                        : "opacity-50 [&_svg]:invisible"
+                        : "opacity-50 [&_svg]:invisible",
                     )}
                   >
                     <CheckIcon className="h-4 w-4" />
@@ -383,7 +391,7 @@ export const MultiSelect = React.forwardRef<
                           "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
                           isSelected
                             ? "bg-primary text-primary-foreground"
-                            : "opacity-50 [&_svg]:invisible"
+                            : "opacity-50 [&_svg]:invisible",
                         )}
                       >
                         <CheckIcon className="h-4 w-4" />
@@ -428,14 +436,14 @@ export const MultiSelect = React.forwardRef<
           <WandSparkles
             className={cn(
               "cursor-pointer my-2 text-foreground bg-background w-3 h-3",
-              isAnimating ? "" : "text-muted-foreground"
+              isAnimating ? "" : "text-muted-foreground",
             )}
             onClick={() => setIsAnimating(!isAnimating)}
           />
         )}
       </Popover>
     );
-  }
+  },
 );
 
 MultiSelect.displayName = "MultiSelect";

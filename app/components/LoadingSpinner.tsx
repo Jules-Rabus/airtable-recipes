@@ -7,16 +7,16 @@ interface LoadingSpinnerProps {
   progress?: number;
 }
 
-export function LoadingSpinner({ 
-  size = "md", 
-  text = "Chargement...", 
-  showProgress = false, 
-  progress = 0 
+export function LoadingSpinner({
+  size = "md",
+  text = "Chargement...",
+  showProgress = false,
+  progress = 0,
 }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: "w-8 h-8",
-    md: "w-12 h-12", 
-    lg: "w-16 h-16"
+    md: "w-12 h-12",
+    lg: "w-16 h-16",
   };
 
   return (
@@ -24,13 +24,15 @@ export function LoadingSpinner({
       <div className="relative">
         {/* Main spinner */}
         <div className={`${sizeClasses[size]} ai-pulse`}>
-          <div className={`${sizeClasses[size]} bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center`}>
+          <div
+            className={`${sizeClasses[size]} bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center`}
+          >
             <span className="text-white font-bold">
               {size === "sm" ? "🤖" : size === "md" ? "🤖" : "🤖"}
             </span>
           </div>
         </div>
-        
+
         {/* Orbiting dots */}
         <div className="absolute inset-0 animate-spin">
           <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -47,13 +49,13 @@ export function LoadingSpinner({
           </div>
         </div>
       </div>
-      
+
       {/* Text */}
       <div className="text-center space-y-2">
         <p className="text-lg font-medium">{text}</p>
         {showProgress && (
           <div className="w-48 bg-gray-200 rounded-full h-2">
-            <div 
+            <div
               className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             ></div>
@@ -62,4 +64,4 @@ export function LoadingSpinner({
       </div>
     </div>
   );
-} 
+}

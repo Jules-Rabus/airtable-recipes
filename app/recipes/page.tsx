@@ -9,52 +9,26 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, ChefHat } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-
-interface Recipe extends Record<string, unknown> {
-  id: string;
-  fields?: {
-    Title?: string;
-    Description?: string;
-    Servings?: number;
-    PrepTimeMinutes?: number;
-    CookTimeMinutes?: number;
-  };
-  ingredients?: Array<{
-    id: string;
-    name: string;
-    quantity?: number;
-    unit?: string;
-  }>;
-  instructions?: Array<{
-    text: string;
-    order: number;
-  }>;
-  servings?: number;
-  prep_time_minutes?: number;
-  cook_time_minutes?: number;
-  title?: string;
-  description?: string;
-}
+import { getRecipes } from "@/api/recipes";
+import { RecipeType } from "@/schemas";
 
 export default function RecipesPage() {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [recipes, setRecipes] = useState<RecipeType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchRecipes();
+    loadRecipes();
   }, []);
 
-  const fetchRecipes = async () => {
+  const loadRecipes = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/recipes');
-      if (!response.ok) throw new Error('Failed to fetch recipes');
-      const data = await response.json();
-      setRecipes(Array.isArray(data) ? data : []);
+      const data = await getRecipes();
+      setRecipes(data);
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to load recipes');
+      setError(error.message || "Failed to load recipes");
       toast.error("Erreur lors du chargement des recettes");
     } finally {
       setLoading(false);
@@ -62,7 +36,9 @@ export default function RecipesPage() {
   };
 
   const handleDeleteRecipe = (deletedRecipeId: string) => {
-    setRecipes(prevRecipes => prevRecipes.filter(recipe => recipe.id !== deletedRecipeId));
+    setRecipes((prevRecipes) =>
+      prevRecipes.filter((recipe) => recipe.id !== deletedRecipeId),
+    );
   };
 
   if (loading) {
@@ -73,8 +49,12 @@ export default function RecipesPage() {
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold gradient-text">Mes Recettes</h1>
-                <p className="text-muted-foreground">Vos recettes sauvegardées</p>
+                <h1 className="text-3xl font-bold gradient-text">
+                  Mes Recettes
+                </h1>
+                <p className="text-muted-foreground">
+                  Vos recettes sauvegardées
+                </p>
               </div>
               <Skeleton className="h-10 w-32" />
             </div>
@@ -97,7 +77,7 @@ export default function RecipesPage() {
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-2xl font-bold text-red-600 mb-4">Erreur</h1>
             <p className="text-muted-foreground mb-6">{error}</p>
-            <Button onClick={fetchRecipes} variant="outline">
+            <Button onClick={loadRecipes} variant="outline">
               Réessayer
             </Button>
           </div>
@@ -111,7 +91,6 @@ export default function RecipesPage() {
       <Navigation />
       <main className="container-modern section-padding">
         <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12">
-          {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="heading-lg gradient-text flex items-center gap-2 sm:gap-3">
@@ -121,7 +100,8 @@ export default function RecipesPage() {
                 <span className="text-xl sm:text-2xl">Mes Recettes</span>
               </h1>
               <p className="text-body mt-2">
-                {recipes.length} recette{recipes.length > 1 ? 's' : ''} sauvegardée{recipes.length > 1 ? 's' : ''}
+                {recipes.length} recette{recipes.length > 1 ? "s" : ""}{" "}
+                sauvegardée{recipes.length > 1 ? "s" : ""}
               </p>
             </div>
             <Link href="/">
@@ -132,13 +112,12 @@ export default function RecipesPage() {
             </Link>
           </div>
 
-          {/* Recipes List */}
           {recipes.length > 0 ? (
             <div className="space-y-6 sm:space-y-8">
               {recipes.map((recipe) => (
-                <RecipeCard 
-                  key={recipe.id} 
-                  recipe={recipe} 
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
                   onDelete={handleDeleteRecipe}
                   showDeleteButton={true}
                   showSaveButton={false}
@@ -158,7 +137,8 @@ export default function RecipesPage() {
                   <div className="space-y-3">
                     <h3 className="heading-md">Aucune recette sauvegardée</h3>
                     <p className="text-body px-4">
-                      Commencez par générer et sauvegarder vos premières recettes
+                      Commencez par générer et sauvegarder vos premières
+                      recettes
                     </p>
                   </div>
                   <Link href="/">
@@ -175,4 +155,4 @@ export default function RecipesPage() {
       </main>
     </div>
   );
-} 
+}
