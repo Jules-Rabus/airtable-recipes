@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Navigation } from "./components/Navigation";
@@ -17,7 +23,7 @@ import React from "react";
 import { RecipeCard } from "./components/RecipeCard";
 import { getIngredientOptions, createIngredient } from "@/api/ingredients";
 import { generateRecipes } from "@/api/recipes";
-import { IngredientOption, RecipeCard as RecipeType } from "@/schemas";
+import { IngredientOption, RecipeType } from "@/schemas";
 
 import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
@@ -32,11 +38,20 @@ const INTOLERANCES = [
   { label: "Fruits de mer", value: "shellfish" },
   { label: "Cacao", value: "cacao" },
   { label: "Chocolat", value: "chocolate" },
+  { label: "Arachides", value: "peanuts" },
+  { label: "Sulfites", value: "sulfites" },
+  { label: "Céleri", value: "celery" },
+  { label: "Moutarde", value: "mustard" },
+  { label: "Sésame", value: "sesame" },
+  { label: "Légumineuses", value: "legumes" },
+  { label: "Autre", value: "other" },
 ];
 
 export default function Home() {
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
-  const [ingredientOptions, setIngredientOptions] = useState<IngredientOption[]>([]);
+  const [ingredientOptions, setIngredientOptions] = useState<
+    IngredientOption[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [recipes, setRecipes] = useState<RecipeType[]>([]);
   const [recipeLoading, setRecipeLoading] = useState(false);
@@ -62,7 +77,7 @@ export default function Home() {
 
   const handleAddAndSelectIngredientOption = async (
     option: IngredientOption,
-    select: (values: string[]) => void
+    select: (values: string[]) => void,
   ) => {
     try {
       const newOption = await createIngredient(option.label);
@@ -82,7 +97,9 @@ export default function Home() {
   const [progressMessage, setProgressMessage] = useState("");
 
   const handleRecipeSaved = (savedRecipeIndex: number) => {
-    setRecipes(prevRecipes => prevRecipes.filter((_, index) => index !== savedRecipeIndex));
+    setRecipes((prevRecipes) =>
+      prevRecipes.filter((_, index) => index !== savedRecipeIndex),
+    );
   };
 
   const handleGenerateRecipe = async () => {
@@ -93,13 +110,37 @@ export default function Home() {
     setProgressMessage("Initialisation de l'IA...");
 
     const progressSteps = [
-      { targetProgress: 8, message: "Analyse des ingrédients...", duration: 2000 },
-      { targetProgress: 20, message: "Création des combinaisons culinaires...", duration: 4000 },
-      { targetProgress: 35, message: "Génération des instructions...", duration: 4000 },
-      { targetProgress: 55, message: "Optimisation des recettes...", duration: 4000 },
-      { targetProgress: 75, message: "Finalisation des détails...", duration: 3000 },
-      { targetProgress: 90, message: "Préparation de la réponse...", duration: 2000 },
-      { targetProgress: 98, message: "Finalisation...", duration: 1000 }
+      {
+        targetProgress: 8,
+        message: "Analyse des ingrédients...",
+        duration: 4000,
+      },
+      {
+        targetProgress: 20,
+        message: "Création des combinaisons culinaires...",
+        duration: 6000,
+      },
+      {
+        targetProgress: 35,
+        message: "Génération des instructions...",
+        duration: 6000,
+      },
+      {
+        targetProgress: 55,
+        message: "Optimisation des recettes...",
+        duration: 6000,
+      },
+      {
+        targetProgress: 75,
+        message: "Finalisation des détails...",
+        duration: 6000,
+      },
+      {
+        targetProgress: 90,
+        message: "Préparation de la réponse...",
+        duration: 4000,
+      },
+      { targetProgress: 98, message: "Finalisation...", duration: 2000 },
     ];
 
     let currentStep = 0;
@@ -108,17 +149,20 @@ export default function Home() {
 
     const smoothProgressInterval = setInterval(() => {
       const now = Date.now();
-      
+
       if (currentStep < progressSteps.length) {
         const step = progressSteps[currentStep];
         const stepElapsed = now - stepStartTime;
         const stepProgress = Math.min(stepElapsed / step.duration, 1);
-        
-        const easedProgress = stepProgress * stepProgress * (3 - 2 * stepProgress);
-        const currentStepProgress = stepStartProgress + (step.targetProgress - stepStartProgress) * easedProgress;
-        
+
+        const easedProgress =
+          stepProgress * stepProgress * (3 - 2 * stepProgress);
+        const currentStepProgress =
+          stepStartProgress +
+          (step.targetProgress - stepStartProgress) * easedProgress;
+
         setProgress(Math.round(currentStepProgress));
-        
+
         if (stepElapsed >= step.duration) {
           setProgressMessage(step.message);
           currentStep++;
@@ -129,18 +173,30 @@ export default function Home() {
     }, 50);
 
     try {
-      const selectedIngredientObjects = selectedIngredients.map(id => {
-        const found = ingredientOptions.find(opt => opt.value === id);
-        return found ? { id: found.value, name: found.label } : { id, name: id };
+      const selectedIngredientObjects = selectedIngredients.map((id) => {
+        const found = ingredientOptions.find((opt) => opt.value === id);
+        return found
+          ? { id: found.value, name: found.label }
+          : { id, name: id };
       });
-      const recipesArr = await generateRecipes({ ingredients: selectedIngredientObjects, intolerances, serving, genre });
-      setRecipes(recipesArr.map(r => ({ ...r, ingredientIdMap: selectedIngredientObjects })));
+      const recipesArr = await generateRecipes({
+        ingredients: selectedIngredientObjects,
+        intolerances,
+        serving,
+        genre,
+      });
+      setRecipes(
+        recipesArr.map((r) => ({
+          ...r,
+          ingredientIdMap: selectedIngredientObjects,
+        })),
+      );
       setProgress(100);
       setProgressMessage("Recettes générées avec succès !");
       toast.success("Recettes générées avec succès !");
     } catch (err: unknown) {
       const error = err as Error;
-      setRecipeError(error.message || 'Unknown error');
+      setRecipeError(error.message || "Unknown error");
       toast.error("Erreur lors de la génération des recettes");
     } finally {
       setRecipeLoading(false);
@@ -164,8 +220,8 @@ export default function Home() {
                 Générez des recettes magiques avec l&apos;IA
               </h1>
               <p className="text-body text-base sm:text-lg max-w-3xl mx-auto px-4">
-                Sélectionnez vos ingrédients et laissez notre IA créer des recettes personnalisées, 
-                créatives et délicieuses pour vous.
+                Sélectionnez vos ingrédients et laissez notre IA créer des
+                recettes personnalisées, créatives et délicieuses pour vous.
               </p>
             </div>
           </div>
@@ -177,15 +233,21 @@ export default function Home() {
                   <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-600">
                     <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
-                  <span className="text-lg sm:text-xl">Générer une recette</span>
+                  <span className="text-lg sm:text-xl">
+                    Générer une recette
+                  </span>
                 </CardTitle>
                 <CardDescription className="text-body text-base sm:text-lg">
-                  Sélectionnez vos ingrédients et préférences pour créer des recettes personnalisées
+                  Sélectionnez vos ingrédients et préférences pour créer des
+                  recettes personnalisées
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 sm:space-y-8">
                 <div className="space-y-3">
-                  <Label htmlFor="ingredients" className="text-base font-semibold text-slate-900">
+                  <Label
+                    htmlFor="ingredients"
+                    className="text-base font-semibold text-slate-900"
+                  >
                     🥕 Ingrédients disponibles
                   </Label>
                   {loading ? (
@@ -208,7 +270,10 @@ export default function Home() {
                 <Separator />
 
                 <div className="space-y-3">
-                  <Label htmlFor="serving" className="text-base font-semibold text-slate-900">
+                  <Label
+                    htmlFor="serving"
+                    className="text-base font-semibold text-slate-900"
+                  >
                     👥 Nombre de portions
                   </Label>
                   <Input
@@ -217,7 +282,7 @@ export default function Home() {
                     min={1}
                     max={100}
                     value={serving}
-                    onChange={e => setServing(Number(e.target.value))}
+                    onChange={(e) => setServing(Number(e.target.value))}
                     placeholder="Nombre de portions"
                     className="input-modern text-center h-12 text-lg"
                   />
@@ -237,13 +302,16 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="genre" className="text-base font-semibold text-slate-900">
+                  <Label
+                    htmlFor="genre"
+                    className="text-base font-semibold text-slate-900"
+                  >
                     🍽️ Genre de recette
                   </Label>
                   <Input
                     id="genre"
                     value={genre}
-                    onChange={e => setGenre(e.target.value)}
+                    onChange={(e) => setGenre(e.target.value)}
                     placeholder="Exemple : dessert, plat principal..."
                     className="input-modern h-12"
                   />
@@ -272,7 +340,9 @@ export default function Home() {
                 {recipeLoading && (
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm text-slate-600">
-                      <span className="text-xs sm:text-sm">{progressMessage}</span>
+                      <span className="text-xs sm:text-sm">
+                        {progressMessage}
+                      </span>
                       <span className="text-xs sm:text-sm">{progress}%</span>
                     </div>
                     <Progress value={progress} className="h-2 bg-slate-200" />
@@ -293,9 +363,9 @@ export default function Home() {
               <Card className="modern-card max-w-4xl mx-auto">
                 <CardContent className="pt-8 sm:pt-12 pb-8 sm:pb-12">
                   <div className="flex items-center justify-center">
-                    <LoadingSpinner 
-                      size="lg" 
-                      text="L'IA cuisine pour vous..." 
+                    <LoadingSpinner
+                      size="lg"
+                      text="L'IA cuisine pour vous..."
                       showProgress={true}
                       progress={progress}
                     />
@@ -308,12 +378,16 @@ export default function Home() {
               <div className="space-y-6 sm:space-y-8 fade-in-up">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h2 className="heading-lg gradient-text">🎉 Vos recettes générées</h2>
-                    <p className="text-body">Découvrez vos recettes personnalisées créées par l&apos;IA</p>
+                    <h2 className="heading-lg gradient-text">
+                      🎉 Vos recettes générées
+                    </h2>
+                    <p className="text-body">
+                      Découvrez vos recettes personnalisées créées par l&apos;IA
+                    </p>
                   </div>
-                  <Button 
-                    onClick={handleGenerateRecipe} 
-                    size="sm" 
+                  <Button
+                    onClick={handleGenerateRecipe}
+                    size="sm"
                     variant="outline"
                     className="btn-secondary w-full sm:w-auto"
                   >
@@ -323,9 +397,13 @@ export default function Home() {
                 </div>
                 <div className="space-y-6 sm:space-y-8">
                   {recipes.map((recipe, idx) => (
-                    <div key={idx} className="fade-in-up" style={{ animationDelay: `${idx * 0.1}s` }}>
-                      <RecipeCard 
-                        recipe={recipe} 
+                    <div
+                      key={idx}
+                      className="fade-in-up"
+                      style={{ animationDelay: `${idx * 0.1}s` }}
+                    >
+                      <RecipeCard
+                        recipe={recipe}
                         showSaveButton={true}
                         showDeleteButton={false}
                         isClickable={false}
@@ -349,7 +427,8 @@ export default function Home() {
                     <div className="space-y-3">
                       <h3 className="heading-md">Prêt à cuisiner ?</h3>
                       <p className="text-body px-4">
-                        Sélectionnez vos ingrédients et cliquez sur &quot;Générer mes recettes&quot; pour commencer
+                        Sélectionnez vos ingrédients et cliquez sur
+                        &quot;Générer mes recettes&quot; pour commencer
                       </p>
                     </div>
                   </div>

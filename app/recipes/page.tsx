@@ -10,7 +10,7 @@ import { Plus, ChefHat } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { getRecipes } from "@/api/recipes";
-import { RecipeCard as RecipeType } from "@/schemas";
+import { RecipeType } from "@/schemas";
 
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState<RecipeType[]>([]);
@@ -28,7 +28,7 @@ export default function RecipesPage() {
       setRecipes(data);
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to load recipes');
+      setError(error.message || "Failed to load recipes");
       toast.error("Erreur lors du chargement des recettes");
     } finally {
       setLoading(false);
@@ -36,7 +36,9 @@ export default function RecipesPage() {
   };
 
   const handleDeleteRecipe = (deletedRecipeId: string) => {
-    setRecipes(prevRecipes => prevRecipes.filter(recipe => recipe.id !== deletedRecipeId));
+    setRecipes((prevRecipes) =>
+      prevRecipes.filter((recipe) => recipe.id !== deletedRecipeId),
+    );
   };
 
   if (loading) {
@@ -47,8 +49,12 @@ export default function RecipesPage() {
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold gradient-text">Mes Recettes</h1>
-                <p className="text-muted-foreground">Vos recettes sauvegardées</p>
+                <h1 className="text-3xl font-bold gradient-text">
+                  Mes Recettes
+                </h1>
+                <p className="text-muted-foreground">
+                  Vos recettes sauvegardées
+                </p>
               </div>
               <Skeleton className="h-10 w-32" />
             </div>
@@ -94,7 +100,8 @@ export default function RecipesPage() {
                 <span className="text-xl sm:text-2xl">Mes Recettes</span>
               </h1>
               <p className="text-body mt-2">
-                {recipes.length} recette{recipes.length > 1 ? 's' : ''} sauvegardée{recipes.length > 1 ? 's' : ''}
+                {recipes.length} recette{recipes.length > 1 ? "s" : ""}{" "}
+                sauvegardée{recipes.length > 1 ? "s" : ""}
               </p>
             </div>
             <Link href="/">
@@ -108,9 +115,9 @@ export default function RecipesPage() {
           {recipes.length > 0 ? (
             <div className="space-y-6 sm:space-y-8">
               {recipes.map((recipe) => (
-                <RecipeCard 
-                  key={recipe.id} 
-                  recipe={recipe} 
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
                   onDelete={handleDeleteRecipe}
                   showDeleteButton={true}
                   showSaveButton={false}
@@ -130,7 +137,8 @@ export default function RecipesPage() {
                   <div className="space-y-3">
                     <h3 className="heading-md">Aucune recette sauvegardée</h3>
                     <p className="text-body px-4">
-                      Commencez par générer et sauvegarder vos premières recettes
+                      Commencez par générer et sauvegarder vos premières
+                      recettes
                     </p>
                   </div>
                   <Link href="/">
@@ -147,4 +155,4 @@ export default function RecipesPage() {
       </main>
     </div>
   );
-} 
+}

@@ -1,9 +1,15 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Activity, Zap, Droplets, Apple, Pill } from "lucide-react";
-import { NutritionData } from "@/lib/types";
+import { NutritionData } from "@/schemas";
 
 interface NutritionCardProps {
   nutrition: NutritionData;
@@ -11,7 +17,11 @@ interface NutritionCardProps {
   noCard?: boolean;
 }
 
-export function NutritionCard({ nutrition, serving, noCard = false }: NutritionCardProps) {
+export function NutritionCard({
+  nutrition,
+  serving,
+  noCard = false,
+}: NutritionCardProps) {
   const formatValue = (value: number | undefined, unit: string) => {
     if (value === undefined || value === null) return "N/A";
     return `${value.toFixed(1)} ${unit}`;
@@ -29,7 +39,7 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
       B3: "Vitamine B3",
       B6: "Vitamine B6",
       B12: "Vitamine B12",
-      folate: "Folate"
+      folate: "Folate",
     };
     return names[key] || key;
   };
@@ -44,7 +54,7 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
       zinc: "Zinc",
       copper: "Cuivre",
       manganese: "Manganèse",
-      selenium: "Sélénium"
+      selenium: "Sélénium",
     };
     return names[key] || key;
   };
@@ -61,7 +71,7 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
       B3: "mg",
       B6: "mg",
       B12: "µg",
-      folate: "µg"
+      folate: "µg",
     };
     return units[key] || "";
   };
@@ -76,7 +86,7 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
       zinc: "mg",
       copper: "mg",
       manganese: "mg",
-      selenium: "µg"
+      selenium: "µg",
     };
     return units[key] || "";
   };
@@ -92,7 +102,8 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
               Analyse Nutritionnelle
             </h2>
             <p className="text-xs text-muted-foreground">
-              Valeurs nutritionnelles pour {serving} portion{serving > 1 ? 's' : ''}
+              Valeurs nutritionnelles pour {serving} portion
+              {serving > 1 ? "s" : ""}
             </p>
             {nutrition.nutrition_score !== undefined && (
               <p className="text-sm font-medium text-primary">
@@ -106,7 +117,9 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
             <div className="text-xl sm:text-2xl font-bold text-primary">
               {nutrition.calories} kcal
             </div>
-            <div className="text-xs text-muted-foreground">Calories totales</div>
+            <div className="text-xs text-muted-foreground">
+              Calories totales
+            </div>
           </div>
 
           {/* Macronutriments */}
@@ -120,19 +133,25 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
                 <div className="text-lg sm:text-xl font-bold text-red-600">
                   {formatValue(nutrition.protein, "g")}
                 </div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Protéines</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">
+                  Protéines
+                </div>
               </div>
               <div className="text-center p-2 sm:p-3 bg-yellow-50 rounded-lg">
                 <div className="text-lg sm:text-xl font-bold text-yellow-600">
                   {formatValue(nutrition.carbs, "g")}
                 </div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Glucides</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">
+                  Glucides
+                </div>
               </div>
               <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg">
                 <div className="text-lg sm:text-xl font-bold text-green-600">
                   {formatValue(nutrition.fat, "g")}
                 </div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Lipides</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">
+                  Lipides
+                </div>
               </div>
             </div>
           </div>
@@ -176,18 +195,24 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
               Vitamines
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-              {nutrition.vitamins && Object.entries(nutrition.vitamins).map(([key, value]) => (
-                value !== undefined && value !== null && (
-                  <div key={key} className="text-center p-2 bg-purple-50 rounded">
-                    <div className="text-xs sm:text-sm font-semibold text-purple-600">
-                      {formatValue(value, getVitaminUnit(key))}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {getVitaminName(key)}
-                    </div>
-                  </div>
-                )
-              ))}
+              {nutrition.vitamins &&
+                Object.entries(nutrition.vitamins).map(
+                  ([key, value]) =>
+                    value !== undefined &&
+                    value !== null && (
+                      <div
+                        key={key}
+                        className="text-center p-2 bg-purple-50 rounded"
+                      >
+                        <div className="text-xs sm:text-sm font-semibold text-purple-600">
+                          {formatValue(value, getVitaminUnit(key))}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {getVitaminName(key)}
+                        </div>
+                      </div>
+                    ),
+                )}
             </div>
           </div>
 
@@ -200,18 +225,24 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
               Minéraux
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-              {nutrition.minerals && Object.entries(nutrition.minerals).map(([key, value]) => (
-                value !== undefined && value !== null && (
-                  <div key={key} className="text-center p-2 bg-teal-50 rounded">
-                    <div className="text-xs sm:text-sm font-semibold text-teal-600">
-                      {formatValue(value, getMineralUnit(key))}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {getMineralName(key)}
-                    </div>
-                  </div>
-                )
-              ))}
+              {nutrition.minerals &&
+                Object.entries(nutrition.minerals).map(
+                  ([key, value]) =>
+                    value !== undefined &&
+                    value !== null && (
+                      <div
+                        key={key}
+                        className="text-center p-2 bg-teal-50 rounded"
+                      >
+                        <div className="text-xs sm:text-sm font-semibold text-teal-600">
+                          {formatValue(value, getMineralUnit(key))}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {getMineralName(key)}
+                        </div>
+                      </div>
+                    ),
+                )}
             </div>
           </div>
 
@@ -220,7 +251,9 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
             <>
               <Separator />
               <div className="space-y-2">
-                <h3 className="text-base sm:text-lg font-semibold">Notes nutritionnelles</h3>
+                <h3 className="text-base sm:text-lg font-semibold">
+                  Notes nutritionnelles
+                </h3>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                   {nutrition.nutrition_notes}
                 </p>
@@ -236,7 +269,8 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
               Analyse Nutritionnelle
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              Valeurs nutritionnelles pour {serving} portion{serving > 1 ? 's' : ''}
+              Valeurs nutritionnelles pour {serving} portion
+              {serving > 1 ? "s" : ""}
             </CardDescription>
             {nutrition.nutrition_score !== undefined && (
               <CardDescription className="text-sm">
@@ -250,7 +284,9 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
               <div className="text-xl sm:text-2xl font-bold text-primary">
                 {nutrition.calories} kcal
               </div>
-              <div className="text-xs sm:text-sm text-muted-foreground">Calories totales</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">
+                Calories totales
+              </div>
             </div>
 
             {/* Macronutriments */}
@@ -320,18 +356,24 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
                 Vitamines
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {nutrition.vitamins && Object.entries(nutrition.vitamins).map(([key, value]) => (
-                  value !== undefined && value !== null && (
-                    <div key={key} className="text-center p-2 bg-purple-50 rounded">
-                      <div className="text-sm font-semibold text-purple-600">
-                        {formatValue(value, getVitaminUnit(key))}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {getVitaminName(key)}
-                      </div>
-                    </div>
-                  )
-                ))}
+                {nutrition.vitamins &&
+                  Object.entries(nutrition.vitamins).map(
+                    ([key, value]) =>
+                      value !== undefined &&
+                      value !== null && (
+                        <div
+                          key={key}
+                          className="text-center p-2 bg-purple-50 rounded"
+                        >
+                          <div className="text-sm font-semibold text-purple-600">
+                            {formatValue(value, getVitaminUnit(key))}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {getVitaminName(key)}
+                          </div>
+                        </div>
+                      ),
+                  )}
               </div>
             </div>
 
@@ -344,18 +386,24 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
                 Minéraux
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {nutrition.minerals && Object.entries(nutrition.minerals).map(([key, value]) => (
-                  value !== undefined && value !== null && (
-                    <div key={key} className="text-center p-2 bg-teal-50 rounded">
-                      <div className="text-sm font-semibold text-teal-600">
-                        {formatValue(value, getMineralUnit(key))}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {getMineralName(key)}
-                      </div>
-                    </div>
-                  )
-                ))}
+                {nutrition.minerals &&
+                  Object.entries(nutrition.minerals).map(
+                    ([key, value]) =>
+                      value !== undefined &&
+                      value !== null && (
+                        <div
+                          key={key}
+                          className="text-center p-2 bg-teal-50 rounded"
+                        >
+                          <div className="text-sm font-semibold text-teal-600">
+                            {formatValue(value, getMineralUnit(key))}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {getMineralName(key)}
+                          </div>
+                        </div>
+                      ),
+                  )}
               </div>
             </div>
 
@@ -364,7 +412,9 @@ export function NutritionCard({ nutrition, serving, noCard = false }: NutritionC
               <>
                 <Separator />
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Notes nutritionnelles</h3>
+                  <h3 className="text-lg font-semibold">
+                    Notes nutritionnelles
+                  </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {nutrition.nutrition_notes}
                   </p>

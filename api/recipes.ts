@@ -1,27 +1,39 @@
-'use server'
+"use server";
 
-import {z} from 'zod'
-import {RecipeCard, recipeCardSchema} from '@/schemas'
-import {createRecord, deleteRecord, getRecord, getRecords} from '@/lib/axios'
-import {AirtableTables} from '@/constants/airtable'
-import {generateObject} from 'ai'
-import {mistral} from '@ai-sdk/mistral'
+import { z } from "zod";
 import {
-  IngredientRecord,
+  IngredientOption,
+  nutritionDataSchema,
   InstructionRecord,
   NutritionData,
-  Recipe,
+  RecipeType,
   RecipeIngredientRecord,
-  RecipeInstructionRecord,
-  RecipeRecord
-} from '@/lib/types'
-import {addRecipeIngredientJoins, fetchRecipeIngredientJoins} from '@/api/recipeIngredients'
-import {addRecipeInstructions, fetchRecipeInstructions} from "@/api/recipeInstructions";
+  RecipeRecord,
+  recipeSchema,
+} from "@/schemas";
+import { createRecord, deleteRecord, getRecord, getRecords } from "@/lib/axios";
+import { AirtableTables } from "@/constants/airtable";
+import { generateObject } from "ai";
+import { mistral } from "@ai-sdk/mistral";
+import {
+  addRecipeIngredientJoins,
+  fetchRecipeIngredientJoins,
+} from "@/api/recipeIngredients";
+import {
+  addRecipeInstructions,
+  fetchRecipeInstructions,
+} from "@/api/recipeInstructions";
+import { getIngredientOptions } from "@/api/ingredients";
 
-export const generateRecipes = async (payload: { ingredients: { id: string; name: string }[]; intolerances: string[]; serving: number; genre?: string }): Promise<RecipeCard[]> => {
-  const { ingredients, intolerances, serving = 1, genre } = payload
-  const ingredientListJson = JSON.stringify(ingredients)
-  const typeInfo = genre ? ` de type ${genre}` : ''
+export const generateRecipes = async (payload: {
+  ingredients: { id: string; name: string }[];
+  intolerances: string[];
+  serving: number;
+  genre?: string;
+}): Promise<RecipeType[]> => {
+  const { ingredients, intolerances, serving = 1, genre } = payload;
+  const ingredientListJson = JSON.stringify(ingredients);
+  const typeInfo = genre ? ` de type ${genre}` : "";
   const prompt = `
     Crée 3-10 recettes délicieuses${typeInfo} en utilisant UNIQUEMENT les ingrédients alimentaires fournis.
 
@@ -40,7 +52,7 @@ export const generateRecipes = async (payload: { ingredients: { id: string; name
     CONTRAINTES STRICTES :
     - Utilise UNIQUEMENT les ingrédients alimentaires fournis
     - N'ajoute AUCUN ingrédient supplémentaire
-    - Respecte les intolérances : ${Array.isArray(intolerances) && intolerances.length > 0 ? intolerances.map(i => typeof i === 'object' && i !== null && 'name' in i ? (i as { name: string }).name : i).join(', ') : 'aucune'}
+    - Respecte les intolérances : ${Array.isArray(intolerances) && intolerances.length > 0 ? intolerances.map((i) => (typeof i === "object" && i !== null && "name" in i ? (i as { name: string }).name : i)).join(", ") : "aucune"}
     - Portions : ${serving} personne(s) par recette
 
     INGRÉDIENTS DISPONIBLES : ${ingredientListJson}
@@ -56,7 +68,7 @@ export const generateRecipes = async (payload: { ingredients: { id: string; name
        - Exemple : si 1 portion = 100g, alors ${serving} portions = ${serving * 100}g
        - Utilise des quantités réalistes et précises pour ${serving} personne(s)
     7. Créativité : Plus il y a d'ingrédients, plus tu peux être créatif et proposer de recettes
-  `
+  `;
 
   const systemPrompt = `Tu es un chef culinaire français expert. Tu dois TOUJOURS répondre en français.
 
@@ -111,107 +123,161 @@ export const generateRecipes = async (payload: { ingredients: { id: string; name
     RÉPONSE FINALE :
     - Réponds UNIQUEMENT en JSON valide
     - TOUT en français (titres, descriptions, instructions)
-    - Sans texte supplémentaire`
+    - Sans texte supplémentaire`;
 
   const { object } = await generateObject({
-    model: mistral('mistral-medium-latest'),
+    model: mistral("mistral-medium-latest"),
     system: systemPrompt,
     prompt,
-    schema: z.object({ recipes: z.array(recipeCardSchema) })
-  })
-  return object.recipes as RecipeCard[]
-}
+    schema: z.object({ recipes: z.array(recipeSchema) }),
+  });
+  return object.recipes;
+};
 
-export const getRecipes = async (): Promise<RecipeCard[]> => {
-  const recipes = await getRecords(
-      AirtableTables.RECIPES,
-      { sort: [{ field: 'Title', direction: 'asc' }] }
-  ) as RecipeRecord[];
+export const getRecipes = async (): Promise<RecipeType[]> => {
+  const recipes = (await getRecords(AirtableTables.RECIPES, {
+    sort: [{ field: "Title", direction: "asc" }],
+  })) as RecipeRecord[];
 
-  const [ingredients, instructions] = await Promise.all([
+  const [ingredientJoins, instructions, ingredients] = (await Promise.all([
     fetchRecipeIngredientJoins(),
-    fetchRecipeInstructions()
-  ]) as [IngredientRecord[], InstructionRecord[]]
+    fetchRecipeInstructions(),
+    getIngredientOptions(),
+  ])) as [RecipeIngredientRecord[], InstructionRecord[], IngredientOption[]];
 
-  const ingredientsMap = new Map<string, IngredientRecord[]>()
-    ingredients.forEach(ing => {
-        const refs = ing.fields.Recipes as string[]
-        refs.forEach(id => {
-        if (!ingredientsMap.has(id)) ingredientsMap.set(id, [])
-        ingredientsMap.get(id)!.push(ing)
-        })
-    })
-  const instructionsMap = new Map<string, InstructionRecord[]>()
-  instructions.forEach(instr => {
-    const refs = instr.fields.Recipes as string[]
-    refs.forEach(id => {
-      if (!instructionsMap.has(id)) instructionsMap.set(id, [])
-      instructionsMap.get(id)!.push(instr)
-    })
-  })
+  const ingredientsMap = new Map<string, RecipeIngredientRecord[]>();
+  ingredientJoins.forEach((join) => {
+    const refs = join.fields?.Recipes ?? [];
+    refs.forEach((id) => {
+      if (!ingredientsMap.has(id)) ingredientsMap.set(id, []);
+      ingredientsMap.get(id)!.push(join);
+    });
+  });
+  const instructionsMap = new Map<string, InstructionRecord[]>();
+  instructions.forEach((instr) => {
+    const refs = instr.fields?.Recipes ?? [];
+    refs.forEach((id) => {
+      if (!instructionsMap.has(id)) instructionsMap.set(id, []);
+      instructionsMap.get(id)!.push(instr);
+    });
+  });
 
-  return recipes.map(r => ({
-    id: r.id,
-    createdTime: r.createdTime,
-    fields: r.fields,
-    title: r.fields.Title,
-    description: r.fields.Description,
-    serving: r.fields.Serving,
-    preparationTime: r.fields?.PrepTimeMinutes,
-    cookingTime: r.fields?.CookTimeMinutes,
-    ingredients: ingredientsMap.get(r.id),
-    instructions: instructionsMap.get(r.id)
-  }))
-}
+  return recipes.map((recipe) => ({
+    id: recipe.id,
+    createdTime: recipe.createdTime,
+    title: recipe.fields?.Title ?? "Aucun titre",
+    description: recipe.fields?.Description ?? "Aucune description",
+    serving: recipe.fields?.Serving ?? 1,
+    preparationTime: recipe.fields?.PrepTimeMinutes ?? 0,
+    cookingTime: recipe.fields?.CookTimeMinutes ?? 0,
+    difficulty: recipe.fields?.Difficulty ?? "Inconnu",
+    type: recipe.fields?.Type ?? "Inconnu",
+    ingredients: ingredientsMap.get(recipe.id)?.map((join) => ({
+      id: join.fields?.Ingredient?.[0] ?? join.id,
+      name:
+        ingredients.find((ing) => ing.value === join.fields?.Ingredient?.[0])
+          ?.label ?? "Inconnu",
+      quantity: join.fields?.Quantity,
+      unit: join.fields?.Unit,
+    })),
+    instructions: instructionsMap.get(recipe.id)?.map((i) => ({
+      text: i.fields?.Instruction ?? "",
+      order: i.fields?.Order ?? 0,
+    })),
+    fields: recipe.fields,
+  }));
+};
 
-export const getRecipe = async (id: string): Promise<Recipe> => {
-  const recipe = await getRecord(AirtableTables.RECIPES, id)
-  const recipeIngredientJoins = await fetchRecipeIngredientJoins(recipe.ID)
-  const recipeInstructionJoins = await fetchRecipeInstructions(recipe.ID)
+export const getRecipe = async (id: string): Promise<RecipeType> => {
+  const recipe = await getRecord(AirtableTables.RECIPES, id);
+  const recipeIngredientJoins = await fetchRecipeIngredientJoins(
+    recipe.fields.ID,
+  );
+  const recipeInstructionJoins = await fetchRecipeInstructions(
+    recipe.fields.ID,
+  );
+  const ingredients = await getIngredientOptions();
 
   return {
     id: (recipe as RecipeRecord).id,
     createdTime: (recipe as RecipeRecord).createdTime,
+    title: recipe.fields?.Title ?? "Aucun titre",
+    description: recipe.fields?.Description ?? "Aucune description",
+    serving: recipe.fields?.Serving,
+    preparationTime: recipe.fields?.PreparationTime,
+    cookingTime: recipe.fields?.CookingTime,
+    difficulty: recipe.fields?.Difficulty ?? "Inconnu",
+    type: recipe.fields?.Type ?? "Inconnu",
+    ingredients: recipeIngredientJoins.map((join) => ({
+      id: join.fields?.Ingredient?.[0] ?? join.id,
+      name:
+        ingredients.find((ing) => ing.value === join.fields?.Ingredient?.[0])
+          ?.label ?? "Inconnu",
+      quantity: join.fields?.Quantity ?? 0,
+      unit: join.fields?.Unit ?? "inconnu",
+    })),
+    instructions: recipeInstructionJoins.map((inst) => ({
+      text: inst.fields?.Instruction ?? "",
+      order: inst.fields?.Order ?? 0,
+    })),
     fields: (recipe as RecipeRecord).fields,
-    recipe_ingredient_quantity_records: recipeIngredientJoins as RecipeIngredientRecord[],
-    recipe_instruction_records: recipeInstructionJoins as RecipeInstructionRecord[]
-  }
-}
+  };
+};
 
-export const saveRecipe = async (recipe: RecipeCard): Promise<void> => {
+export const saveRecipe = async (recipe: RecipeType): Promise<void> => {
   const fields: Record<string, unknown> = {
     Title: recipe.title,
     Description: recipe.description,
     Serving: recipe.serving,
     PreparationTime: recipe.preparationTime,
-    CookingTime: recipe.cookingTime
-  }
-  const savedRecipe = await createRecord(AirtableTables.RECIPES, fields)
-  const allIngredients = await getRecords(AirtableTables.INGREDIENTS) as Array<{ id: string }>
-  const validIds = new Set(allIngredients.map(ing => ing.id))
-  const filtered = (recipe.ingredients || []).filter(ing => ing.id && validIds.has(ing.id))
+    CookingTime: recipe.cookingTime,
+    Difficulty: recipe.difficulty,
+  };
+  const savedRecipe = await createRecord(AirtableTables.RECIPES, fields);
+  const allIngredients = (await getRecords(
+    AirtableTables.INGREDIENTS,
+  )) as Array<{ id: string }>;
+  const validIds = new Set(allIngredients.map((ing) => ing.id));
+  const filtered = (recipe.ingredients || []).filter(
+    (ing) => ing.id && validIds.has(ing.id),
+  );
   if (filtered.length > 0) {
-    const joinRecords = filtered.map(ing => ({ Recipe: [savedRecipe.id], Ingredient: [ing.id as string], Quantity: ing.quantity, Unit: ing.unit }))
-    await addRecipeIngredientJoins(joinRecords)
+    const joinRecords = filtered.map((ing) => ({
+      Recipes: [savedRecipe.id],
+      Ingredient: [ing.id as string],
+      Quantity: ing.quantity,
+      Unit: ing.unit,
+    }));
+    await addRecipeIngredientJoins(joinRecords);
   }
   if (recipe.instructions && recipe.instructions.length > 0) {
-    const instructionRecords = recipe.instructions.map(inst => ({ Instruction: inst.text, Order: inst.order, Recipes: [savedRecipe.id] }))
-    await addRecipeInstructions(instructionRecords)
+    const instructionRecords = recipe.instructions.map((inst) => ({
+      Instruction: inst.text,
+      Order: inst.order,
+      Recipes: [savedRecipe.id],
+    }));
+    await addRecipeInstructions(instructionRecords);
   }
-}
+};
 
 export const deleteRecipe = async (recipeId: string): Promise<void> => {
-  await deleteRecord(AirtableTables.RECIPES, recipeId)
-}
+  await deleteRecord(AirtableTables.RECIPES, recipeId);
+};
 
-export const analyzeRecipeNutrition = async (payload: { ingredients: Array<{ name: string; quantity: number; unit: string }>; serving: number; recipeTitle: string }): Promise<NutritionData> => {
-  const { ingredients, serving, recipeTitle } = payload
-  const ingredientList = ingredients.map(ing => `${ing.name}: ${ing.quantity} ${ing.unit}`).join(', ')
+export const analyzeRecipeNutrition = async (payload: {
+  ingredients: Array<{ name: string; quantity: number; unit: string }>;
+  serving: number;
+  recipeTitle: string;
+}): Promise<NutritionData> => {
+  const { ingredients, serving, recipeTitle } = payload;
+  const ingredientList = ingredients
+    .map((ing) => `${ing.name}: ${ing.quantity} ${ing.unit}`)
+    .join(", ");
   const prompt = `Analyse la valeur nutritionnelle de cette recette avec PRÉCISION.
 
     INGRÉDIENTS : ${ingredientList}
     PORTIONS : ${serving} personne(s)
-    RECETTE : ${recipeTitle || 'Recette'}
+    RECETTE : ${recipeTitle || "Recette"}
 
     RÈGLES STRICTES D'ANALYSE :
     1. Calcule les valeurs nutritionnelles pour ${serving} portion(s) EXACTEMENT
@@ -235,49 +301,16 @@ export const analyzeRecipeNutrition = async (payload: { ingredients: Array<{ nam
     - Multiplier par le nombre de portions (${serving})
     - Arrondir à 1 décimale pour les macronutriments, 0 décimale pour les vitamines/minéraux
     - Si un ingrédient n'est pas dans la liste de référence, utiliser des valeurs moyennes réalistes
+     - Pour chaque vitamine et minéral, donne une estimation même approximative basée sur des tables de composition ou des aliments proches.
 
-    Réponds UNIQUEMENT en JSON valide, sans texte supplémentaire.`
+    Réponds UNIQUEMENT en JSON valide, sans texte supplémentaire.`;
 
   const { object } = await generateObject({
-    model: mistral('mistral-medium-latest'),
+    model: mistral("mistral-medium-latest"),
     prompt: prompt,
     system: systemPrompt,
-    schema: z.object({
-      calories: z.number().min(0).max(5000),
-      protein: z.number().min(0).max(200),
-      carbs: z.number().min(0).max(500),
-      fat: z.number().min(0).max(200),
-      fiber: z.number().min(0).max(100),
-      sugar: z.number().min(0).max(200),
-      sodium: z.number().min(0).max(5000),
-      vitamins: z.object({
-        A: z.number().min(0).max(10000).optional(),
-        C: z.number().min(0).max(1000).optional(),
-        D: z.number().min(0).max(100).optional(),
-        E: z.number().min(0).max(100).optional(),
-        K: z.number().min(0).max(1000).optional(),
-        B1: z.number().min(0).max(10).optional(),
-        B2: z.number().min(0).max(10).optional(),
-        B3: z.number().min(0).max(100).optional(),
-        B6: z.number().min(0).max(10).optional(),
-        B12: z.number().min(0).max(100).optional(),
-        folate: z.number().min(0).max(1000).optional()
-      }),
-      minerals: z.object({
-        calcium: z.number().min(0).max(2000).optional(),
-        iron: z.number().min(0).max(100).optional(),
-        magnesium: z.number().min(0).max(1000).optional(),
-        phosphorus: z.number().min(0).max(2000).optional(),
-        potassium: z.number().min(0).max(5000).optional(),
-        zinc: z.number().min(0).max(50).optional(),
-        copper: z.number().min(0).max(10).optional(),
-        manganese: z.number().min(0).max(10).optional(),
-        selenium: z.number().min(0).max(200).optional()
-      }),
-      nutrition_notes: z.string().min(10).max(500),
-      nutrition_score: z.number().min(0).max(5)
-    })
-  })
+    schema: nutritionDataSchema,
+  });
 
-  return object as NutritionData
-}
+  return object as NutritionData;
+};
