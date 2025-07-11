@@ -4,11 +4,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Trash2, Clock, Users, ChefHat, Save, BookOpen } from "lucide-react";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { RecipeCard as RecipeType } from "@/schemas";
+import { RecipeType } from "@/schemas";
 import { saveRecipe, deleteRecipe } from "@/api/recipes";
 
 interface RecipeCardProps {
@@ -20,35 +26,31 @@ interface RecipeCardProps {
   onRecipeSaved?: () => void;
 }
 
-export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSaveButton = true, isClickable = false, onRecipeSaved }: RecipeCardProps) {
+export function RecipeCard({
+  recipe,
+  onDelete,
+  showDeleteButton = false,
+  showSaveButton = true,
+  isClickable = false,
+  onRecipeSaved,
+}: RecipeCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const title = recipe.title || recipe.fields?.Title || "Recette sans titre";
-  const description = recipe.description || recipe.fields?.Description || "";
-  const ingredients = recipe.ingredients || [];
-  const instructions = recipe.instructions || [];
-  const serving = recipe.serving ?? recipe.fields?.Serving ?? 1;
-  const difficulty = recipe.difficulty || "Moyenne";
-  const cuisine = recipe.cuisine || "Française";
-  const recipeId = recipe.id || "";
-  const prepTime = recipe.preparationTime ?? recipe.fields?.PreparationTime ?? 0;
-  const cookTime = recipe.cookingTime ?? recipe.fields?.CookingTime ?? 0;
 
   const handleSaveRecipe = async () => {
     setIsSaving(true);
     try {
       await saveRecipe({
-        title,
-        description,
-        ingredients,
-        instructions,
-        serving,
-        difficulty,
-        cuisine,
-        preparationTime: prepTime,
-        cookingTime: cookTime,
+        title: recipe.title,
+        description: recipe.description,
+        ingredients: recipe.ingredients,
+        instructions: recipe.instructions,
+        serving: recipe.serving,
+        difficulty: recipe.difficulty,
+        type: recipe.type,
+        preparationTime: recipe.preparationTime,
+        cookingTime: recipe.cookingTime,
       });
 
       toast.success("Recette sauvegardée avec succès !");
@@ -63,12 +65,12 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
   };
 
   const handleDeleteRecipe = async () => {
-    if (!recipeId || !onDelete) return;
-    
+    if (!recipe.id || !onDelete) return;
+
     setIsDeleting(true);
     try {
-      await deleteRecipe(recipeId);
-      onDelete(recipeId);
+      await deleteRecipe(recipe.id);
+      onDelete(recipe.id);
       toast.success("Recette supprimée avec succès !");
     } catch {
       toast.error("Erreur lors de la suppression");
@@ -83,27 +85,27 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex-1">
             <CardTitle className="heading-md gradient-text mb-3">
-              {title}
+              {recipe.title}
             </CardTitle>
             <CardDescription className="text-body mb-4">
-              {description}
+              {recipe.description}
             </CardDescription>
-            
+
             <div className="flex flex-wrap gap-2 mb-4">
               <Badge variant="secondary" className="badge-secondary">
                 <Clock className="w-3 h-3" />
-                {prepTime + cookTime} min
+                {recipe.preparationTime + recipe.cookingTime} min
               </Badge>
               <Badge variant="secondary" className="badge-secondary">
                 <Users className="w-3 h-3" />
-                {serving} portion{serving > 1 ? 's' : ''}
+                {recipe.serving} portion{recipe.type ? "s" : ""}
               </Badge>
               <Badge variant="secondary" className="badge-secondary">
                 <ChefHat className="w-3 h-3" />
-                {difficulty}
+                {recipe.difficulty}
               </Badge>
               <Badge variant="secondary" className="badge-secondary">
-                {cuisine}
+                {recipe.type}
               </Badge>
             </div>
           </div>
@@ -125,12 +127,14 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
                 ) : (
                   <div className="flex items-center gap-1">
                     <Save className="w-3 h-3" />
-                    <span className="text-xs hidden sm:inline">Sauvegarder</span>
+                    <span className="text-xs hidden sm:inline">
+                      Sauvegarder
+                    </span>
                   </div>
                 )}
               </Button>
             )}
-            
+
             {showDeleteButton && onDelete && (
               <Button
                 onClick={handleDeleteRecipe}
@@ -152,7 +156,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
                 )}
               </Button>
             )}
-            
+
             <Button
               onClick={() => setIsExpanded(!isExpanded)}
               size="sm"
@@ -178,7 +182,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
       {isExpanded && (
         <CardContent className="pt-0 fade-in-up">
           <Separator className="mb-6 sm:mb-8" />
-          
+
           <div className="space-y-4 sm:space-y-6">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gradient-to-r from-green-100 to-emerald-100">
@@ -187,14 +191,16 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
               <h3 className="heading-md text-lg sm:text-xl">Ingrédients</h3>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:gap-4">
-              {ingredients.length > 0 ? (
-                ingredients.map((ingredient, index) => (
-                  <div 
-                    key={index} 
+              {recipe?.ingredients && recipe.ingredients.length > 0 ? (
+                recipe.ingredients.map((ingredient, index) => (
+                  <div
+                    key={index}
                     className="flex items-center gap-3 p-3 sm:p-4 bg-slate-50 rounded-lg hover-lift"
                   >
                     <div className="w-2 h-2 bg-slate-900 rounded-full"></div>
-                    <span className="font-medium text-slate-900 text-sm sm:text-base">{ingredient.name}</span>
+                    <span className="font-medium text-slate-900 text-sm sm:text-base">
+                      {ingredient.name}
+                    </span>
                     {ingredient.quantity && (
                       <span className="text-xs sm:text-sm text-slate-600 ml-auto">
                         {ingredient.quantity} {ingredient.unit}
@@ -220,17 +226,19 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
               <h3 className="heading-md text-lg sm:text-xl">Instructions</h3>
             </div>
             <div className="space-y-3 sm:space-y-4">
-              {instructions.length > 0 ? (
-                instructions.map((instruction, index) => (
-                  <div 
-                    key={index} 
+              {recipe?.instructions && recipe.instructions.length > 0 ? (
+                recipe.instructions.map((instruction, index) => (
+                  <div
+                    key={index}
                     className="flex gap-3 sm:gap-4 p-4 sm:p-6 bg-slate-50 rounded-lg hover-lift"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold">
                       {index + 1}
                     </div>
-                    <p className="text-body text-sm sm:text-base leading-relaxed">{instruction.text}</p>
+                    <p className="text-body text-sm sm:text-base leading-relaxed">
+                      {instruction.text}
+                    </p>
                   </div>
                 ))
               ) : (
@@ -243,7 +251,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
 
           {showSaveButton && (
             <div className="flex gap-3 sm:gap-4 mt-6 sm:mt-8 pt-6 sm:pt-8 border-t">
-              <Button 
+              <Button
                 onClick={handleSaveRecipe}
                 className="flex-1 btn-primary"
                 disabled={isSaving}
@@ -267,35 +275,42 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
   if (isClickable) {
     return (
       <div className="relative">
-        <Link href={`/recipes/${recipeId}`} className="block">
+        <Link href={`/recipes/${recipe.id}`} className="block">
           <div className="cursor-pointer">
             <Card className="modern-card hover-lift transition-all duration-300 overflow-hidden">
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardTitle className="text-xl font-bold gradient-text mb-2">
-                      {title}
+                      {recipe.title}
                     </CardTitle>
                     <CardDescription className="text-sm text-muted-foreground mb-3">
-                      {description}
+                      {recipe.description}
                     </CardDescription>
-                    
+
                     <div className="flex flex-wrap gap-2 mb-3">
-                      <Badge variant="secondary" className="flex items-center gap-1">
+                      <Badge
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
                         <Clock className="w-3 h-3" />
-                        {prepTime + cookTime} min
+                        {recipe.preparationTime + recipe.cookingTime} min
                       </Badge>
-                      <Badge variant="secondary" className="flex items-center gap-1">
+                      <Badge
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
                         <Users className="w-3 h-3" />
-                        {serving} portion{serving > 1 ? 's' : ''}
+                        {recipe.serving} portion{recipe.serving > 1 ? "s" : ""}
                       </Badge>
-                      <Badge variant="secondary" className="flex items-center gap-1">
+                      <Badge
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
                         <ChefHat className="w-3 h-3" />
-                        {difficulty}
+                        {recipe.difficulty}
                       </Badge>
-                      <Badge variant="outline" className="gradient-text">
-                        {cuisine}
-                      </Badge>
+                      <Badge variant="secondary">{recipe.type}</Badge>
                     </div>
                   </div>
                 </div>
@@ -303,7 +318,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
             </Card>
           </div>
         </Link>
-        
+
         <div className="absolute top-4 right-4 flex flex-col gap-2">
           {showSaveButton && (
             <Button
@@ -326,7 +341,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
               )}
             </Button>
           )}
-          
+
           {showDeleteButton && onDelete && (
             <Button
               onClick={handleDeleteRecipe}
@@ -348,7 +363,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
               )}
             </Button>
           )}
-          
+
           <Button
             onClick={() => setIsExpanded(!isExpanded)}
             size="sm"
@@ -380,10 +395,10 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
                   <h3 className="text-lg font-semibold">Ingrédients</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {ingredients.length > 0 ? (
-                    ingredients.map((ingredient, index) => (
-                      <div 
-                        key={index} 
+                  {recipe.ingredients && recipe.ingredients.length > 0 ? (
+                    recipe.ingredients.map((ingredient, index) => (
+                      <div
+                        key={index}
                         className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg hover-lift"
                       >
                         <div className="w-2 h-2 bg-primary rounded-full"></div>
@@ -411,17 +426,19 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
                   <h3 className="text-lg font-semibold">Instructions</h3>
                 </div>
                 <div className="space-y-4">
-                  {instructions.length > 0 ? (
-                    instructions.map((instruction, index) => (
-                      <div 
-                        key={index} 
+                  {recipe.instructions && recipe.instructions.length > 0 ? (
+                    recipe.instructions.map((instruction, index) => (
+                      <div
+                        key={index}
                         className="flex gap-4 p-4 bg-muted/30 rounded-lg hover-lift"
                         style={{ animationDelay: `${index * 0.1}s` }}
                       >
                         <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
                           {index + 1}
                         </div>
-                        <p className="text-sm leading-relaxed">{instruction.text}</p>
+                        <p className="text-sm leading-relaxed">
+                          {instruction.text}
+                        </p>
                       </div>
                     ))
                   ) : (
@@ -434,7 +451,7 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
 
               {showSaveButton && (
                 <div className="flex gap-3 mt-6 pt-6 border-t">
-                  <Button 
+                  <Button
                     onClick={handleSaveRecipe}
                     className="flex-1 gradient-bg hover:opacity-90"
                     disabled={isSaving}
@@ -458,4 +475,4 @@ export function RecipeCard({ recipe, onDelete, showDeleteButton = false, showSav
   }
 
   return <CardContentComponent />;
-} 
+}

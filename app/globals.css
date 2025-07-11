@@ -65,7 +65,9 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 }
 
@@ -196,7 +198,8 @@
   }
 
   @keyframes aiPulse {
-    0%, 100% {
+    0%,
+    100% {
       transform: scale(1);
     }
     50% {
@@ -205,7 +208,8 @@
   }
 
   @keyframes aiFloat {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0px);
     }
     50% {
@@ -244,47 +248,49 @@
     @apply text-slate-600 leading-relaxed text-sm sm:text-base;
   }
 
-/* Tremblement pour la poubelle */
-.lucide-trash {
-  @apply transition-transform duration-300 ease-in-out;
-}
+  /* Tremblement pour la poubelle */
+  .lucide-trash {
+    @apply transition-transform duration-300 ease-in-out;
+  }
 
-button:hover .lucide-trash,
-a:not(.fc-white):hover .lucide-trash {
-  animation: shakeHorizontal 0.5s ease-in-out infinite;
-}
+  button:hover .lucide-trash,
+  a:not(.fc-white):hover .lucide-trash {
+    animation: shakeHorizontal 0.5s ease-in-out infinite;
+  }
 
-.lucide-plus {
-  @apply transition-transform duration-300 ease-in-out;
-}
+  .lucide-plus {
+    @apply transition-transform duration-300 ease-in-out;
+  }
 
-button:hover .lucide-plus,
-a:hover .lucide-plus {
-  animation: pulseScale 1.5s ease-in-out infinite;
-}
+  button:hover .lucide-plus,
+  a:hover .lucide-plus {
+    animation: pulseScale 1.5s ease-in-out infinite;
+  }
 
-/* Keyframes */
-@keyframes shakeHorizontal {
-  0%, 100% {
-    transform: translateX(0) rotate(0);
+  /* Keyframes */
+  @keyframes shakeHorizontal {
+    0%,
+    100% {
+      transform: translateX(0) rotate(0);
+    }
+    25% {
+      transform: translateX(-3px) rotate(-3deg);
+    }
+    50% {
+      transform: translateX(3px) rotate(3deg);
+    }
+    75% {
+      transform: translateX(-3px) rotate(-3deg);
+    }
   }
-  25% {
-    transform: translateX(-3px) rotate(-3deg);
-  }
-  50% {
-    transform: translateX(3px) rotate(3deg);
-  }
-  75% {
-    transform: translateX(-3px) rotate(-3deg);
-  }
-}
 
-@keyframes pulseScale {
-  0%, 100% {
-    transform: scale(1);
+  @keyframes pulseScale {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.25);
+    }
   }
-  50% {
-    transform: scale(1.25);
-  }
-}
 }
