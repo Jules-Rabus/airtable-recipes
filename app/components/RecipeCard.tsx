@@ -119,6 +119,7 @@ export function RecipeCard({
           </div>
 
           <div className="flex flex-row sm:flex-col gap-2 sm:gap-2 sm:ml-6">
+            {recipe.id && (
             <Link href={`/recipes/${recipe.id}`}>
               <Button size="sm" className="btn-primary flex-1 sm:flex-none">
                 <div className="flex items-center gap-1">
@@ -127,6 +128,7 @@ export function RecipeCard({
                 </div>
               </Button>
             </Link>
+            )}
             {showSaveButton && (
               <Button
                 onClick={handleSaveRecipe}
