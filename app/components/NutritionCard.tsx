@@ -8,7 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Activity, Zap, Droplets, Apple, Pill } from "lucide-react";
+import { FaHeartbeat, FaBolt, FaAppleAlt, FaPills } from "react-icons/fa";
+import { IoWater } from "react-icons/io5";
 import { NutritionData } from "@/schemas";
 
 interface NutritionCardProps {
@@ -98,7 +99,7 @@ export function NutritionCard({
           {/* Header */}
           <div className="text-center space-y-2">
             <h2 className="text-lg sm:text-xl font-bold flex items-center justify-center gap-2">
-              <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
+              <FaHeartbeat className="w-4 h-4 sm:w-5 sm:h-5" />
               Analyse Nutritionnelle
             </h2>
             <p className="text-xs text-muted-foreground">
@@ -125,7 +126,7 @@ export function NutritionCard({
           {/* Macronutriments */}
           <div className="space-y-3 sm:space-y-4">
             <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
-              <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
+              <FaBolt className="w-3 h-3 sm:w-4 sm:h-4" />
               Macronutriments
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
@@ -161,7 +162,7 @@ export function NutritionCard({
           {/* Micronutriments */}
           <div className="space-y-3 sm:space-y-4">
             <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
-              <Apple className="w-3 h-3 sm:w-4 sm:h-4" />
+              <FaAppleAlt className="w-3 h-3 sm:w-4 sm:h-4" />
               Micronutriments
             </h3>
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -191,7 +192,7 @@ export function NutritionCard({
           {/* Vitamines */}
           <div className="space-y-3 sm:space-y-4">
             <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
-              <Pill className="w-3 h-3 sm:w-4 sm:h-4" />
+              <FaPills className="w-3 h-3 sm:w-4 sm:h-4" />
               Vitamines
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
@@ -221,7 +222,7 @@ export function NutritionCard({
           {/* Minéraux */}
           <div className="space-y-3 sm:space-y-4">
             <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
-              <Droplets className="w-3 h-3 sm:w-4 sm:h-4" />
+              <IoWater className="w-3 h-3 sm:w-4 sm:h-4" />
               Minéraux
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
@@ -265,7 +266,7 @@ export function NutritionCard({
         <Card className="modern-card hover-lift">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
+              <FaHeartbeat className="w-4 h-4 sm:w-5 sm:h-5" />
               Analyse Nutritionnelle
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
@@ -292,7 +293,7 @@ export function NutritionCard({
             {/* Macronutriments */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Zap className="w-4 h-4" />
+                <FaBolt className="w-4 h-4" />
                 Macronutriments
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -322,7 +323,7 @@ export function NutritionCard({
             {/* Micronutriments */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Apple className="w-4 h-4" />
+                <FaAppleAlt className="w-4 h-4" />
                 Micronutriments
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -352,7 +353,7 @@ export function NutritionCard({
             {/* Vitamines */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Pill className="w-4 h-4" />
+                <FaPills className="w-4 h-4" />
                 Vitamines
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -382,7 +383,7 @@ export function NutritionCard({
             {/* Minéraux */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Droplets className="w-4 h-4" />
+                <IoWater className="w-4 h-4" />
                 Minéraux
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">

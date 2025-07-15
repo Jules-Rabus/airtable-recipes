@@ -6,16 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Navigation } from "../components/Navigation";
 import { RecipeCard } from "../components/RecipeCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, ChefHat } from "lucide-react";
+import { FaPlus } from "react-icons/fa";
+import { IoRestaurantOutline } from "react-icons/io5";
 import Link from "next/link";
 import { toast } from "sonner";
 import { getRecipes } from "@/api/recipes";
 import { RecipeType } from "@/schemas";
+import { Input } from "@/components/ui/input";
 
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState<RecipeType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     loadRecipes();
@@ -41,6 +44,10 @@ export default function RecipesPage() {
     );
   };
 
+  const filteredRecipes = recipes.filter((recipe) =>
+    recipe.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen">
@@ -50,10 +57,10 @@ export default function RecipesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold gradient-text">
-                  Mes Recettes
+                  Mon Carnet de Recettes
                 </h1>
                 <p className="text-muted-foreground">
-                  Vos recettes sauvegardées
+                  Toutes vos recettes favorites, réunies en un seul endroit.
                 </p>
               </div>
               <Skeleton className="h-10 w-32" />
@@ -94,34 +101,45 @@ export default function RecipesPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="heading-lg gradient-text flex items-center gap-2 sm:gap-3">
-                <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-600">
-                  <ChefHat className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-emerald-600">
+                  <IoRestaurantOutline className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
-                <span className="text-xl sm:text-2xl">Mes Recettes</span>
+                <span className="text-xl sm:text-2xl">
+                  Mon Carnet de Recettes
+                </span>
               </h1>
               <p className="text-body mt-2">
-                {recipes.length} recette{recipes.length > 1 ? "s" : ""}{" "}
-                sauvegardée{recipes.length > 1 ? "s" : ""}
+                {filteredRecipes.length} recette
+                {filteredRecipes.length > 1 ? "s" : ""} enregistrée
+                {filteredRecipes.length > 1 ? "s" : ""}
               </p>
             </div>
-            <Link href="/">
-              <Button className="btn-primary w-full sm:w-auto">
-                <Plus className="w-4 h-4 mr-2 lucide-plus" />
-                Nouvelle recette
-              </Button>
-            </Link>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Input
+                placeholder="Rechercher une recette..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+              <Link href="/">
+                <Button className="btn-primary w-full sm:w-auto">
+                  <FaPlus className="w-4 h-4 mr-2 lucide-plus" />
+                  Créer une nouvelle recette
+                </Button>
+              </Link>
+            </div>
           </div>
 
-          {recipes.length > 0 ? (
-            <div className="space-y-6 sm:space-y-8">
-              {recipes.map((recipe) => (
+          {filteredRecipes.length > 0 ? (
+            <div className="card-grid">
+              {filteredRecipes.map((recipe) => (
                 <RecipeCard
                   key={recipe.id}
                   recipe={recipe}
                   onDelete={handleDeleteRecipe}
                   showDeleteButton={true}
                   showSaveButton={false}
-                  isClickable={true}
+                  className="h-full"
                 />
               ))}
             </div>
@@ -130,21 +148,21 @@ export default function RecipesPage() {
               <CardContent className="pt-12 sm:pt-16 pb-12 sm:pb-16">
                 <div className="text-center space-y-6">
                   <div className="ai-float">
-                    <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-gradient-to-r from-purple-100 to-pink-100 mx-auto">
+                    <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-gradient-to-r from-green-100 to-emerald-100 mx-auto">
                       <span className="text-3xl sm:text-4xl">🍽️</span>
                     </div>
                   </div>
                   <div className="space-y-3">
-                    <h3 className="heading-md">Aucune recette sauvegardée</h3>
+                    <h3 className="heading-md">Votre carnet est encore vide</h3>
                     <p className="text-body px-4">
-                      Commencez par générer et sauvegarder vos premières
-                      recettes
+                      Générez des recettes et sauvegardez-les pour les retrouver
+                      ici.
                     </p>
                   </div>
                   <Link href="/">
                     <Button className="btn-primary w-full sm:w-auto">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Créer ma première recette
+                      <FaPlus className="w-4 h-4 mr-2" />
+                      Générer ma première recette
                     </Button>
                   </Link>
                 </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,10 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Navigation } from "./components/Navigation";
 import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 import { Separator } from "@/components/ui/separator";
-import { LoadingSpinner } from "./components/LoadingSpinner";
 
 import React from "react";
 import { RecipeCard } from "./components/RecipeCard";
@@ -26,9 +24,9 @@ import { generateRecipes } from "@/api/recipes";
 import { IngredientOption, RecipeType } from "@/schemas";
 
 import { toast } from "sonner";
-import { Sparkles } from "lucide-react";
+import { FaMagic, FaPlus } from "react-icons/fa";
 
-const INTOLERANCES = [
+const INITIAL_INTOLERANCES = [
   { label: "Brocolis", value: "gluten" },
   { label: "Lactose", value: "lactose" },
   { label: "Fruits à coque", value: "nuts" },
@@ -52,14 +50,19 @@ export default function Home() {
   const [ingredientOptions, setIngredientOptions] = useState<
     IngredientOption[]
   >([]);
-  const [loading, setLoading] = useState(true);
   const [recipes, setRecipes] = useState<RecipeType[]>([]);
   const [recipeLoading, setRecipeLoading] = useState(false);
   const [recipeError, setRecipeError] = useState<string | null>(null);
-  const [intolerances, setIntolerances] = useState<string[]>([]);
+  const [selectedIntolerances, setSelectedIntolerances] = useState<string[]>(
+    [],
+  );
+  const [intoleranceOptions, setIntoleranceOptions] =
+    useState(INITIAL_INTOLERANCES);
   const [serving, setServing] = useState(1);
   const [genre, setGenre] = useState("");
   const [progress, setProgress] = useState(0);
+  const [ingredientSearch, setIngredientSearch] = useState("");
+  const [intoleranceSearch, setIntoleranceSearch] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -69,30 +72,86 @@ export default function Home() {
       } catch {
         setIngredientOptions([]);
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
     load();
   }, []);
 
-  const handleAddAndSelectIngredientOption = async (
-    option: IngredientOption,
-    select: (values: string[]) => void,
-  ) => {
-    try {
-      const newOption = await createIngredient(option.label);
-      setIngredientOptions((prev) => [newOption, ...prev]);
-      const merged = [...selectedIngredients, newOption.value];
-      select(merged);
-      setSelectedIngredients(merged);
-      toast.success("Ingrédient ajouté avec succès !");
-    } catch {
-      setIngredientOptions((prev) => [option, ...prev]);
-      select([option.value]);
-      setSelectedIngredients([option.value]);
-      toast.error("Erreur lors de l'ajout de l'ingrédient");
+  const handleToggleIngredient = (value: string) => {
+    setSelectedIngredients((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+    );
+  };
+
+  const handleToggleIntolerance = (value: string) => {
+    setSelectedIntolerances((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+    );
+  };
+
+  const handleAddNewIngredient = async () => {
+    const newIngredientName = ingredientSearch.trim();
+    if (
+      newIngredientName &&
+      !ingredientOptions.some(
+        (opt) => opt.label.toLowerCase() === newIngredientName.toLowerCase(),
+      )
+    ) {
+      try {
+        const newIngredientFromApi = await createIngredient({
+          name: newIngredientName,
+        });
+        // Adapt the API response to the format used in the frontend
+        const newIngredient = {
+          label: newIngredientFromApi.name,
+          value: newIngredientFromApi.id,
+        };
+        setIngredientOptions((prev) => [newIngredient, ...prev]);
+        setSelectedIngredients((prev) => [...prev, newIngredient.value]);
+        setIngredientSearch("");
+        toast.success(
+          `"${newIngredientName}" a été ajouté à vos ingrédients !`,
+        );
+      } catch {
+        toast.error("Erreur lors de l'ajout de l'ingrédient.");
+      }
     }
   };
+
+  const handleAddNewIntolerance = () => {
+    const newIntoleranceName = intoleranceSearch.trim();
+    if (
+      newIntoleranceName &&
+      !intoleranceOptions.some(
+        (opt) => opt.label.toLowerCase() === newIntoleranceName.toLowerCase(),
+      )
+    ) {
+      const newIntolerance = {
+        label: newIntoleranceName,
+        value: newIntoleranceName.toLowerCase(),
+      };
+      setIntoleranceOptions((prev) => [newIntolerance, ...prev]);
+      setSelectedIntolerances((prev) => [...prev, newIntolerance.value]);
+      setIntoleranceSearch("");
+    }
+  };
+
+  const handleSelectAllIngredients = () => {
+    if (selectedIngredients.length === ingredientOptions.length) {
+      setSelectedIngredients([]);
+    } else {
+      setSelectedIngredients(ingredientOptions.map((opt) => opt.value));
+    }
+  };
+
+  const filteredIngredients = ingredientOptions.filter((option) =>
+    option.label.toLowerCase().includes(ingredientSearch.toLowerCase()),
+  );
+
+  const filteredIntolerances = intoleranceOptions.filter((option) =>
+    option.label.toLowerCase().includes(intoleranceSearch.toLowerCase()),
+  );
 
   const [progressMessage, setProgressMessage] = useState("");
 
@@ -181,7 +240,7 @@ export default function Home() {
       });
       const recipesArr = await generateRecipes({
         ingredients: selectedIngredientObjects,
-        intolerances,
+        intolerances: selectedIntolerances,
         serving,
         genre,
       });
@@ -197,7 +256,9 @@ export default function Home() {
     } catch (err: unknown) {
       const error = err as Error;
       setRecipeError(error.message || "Unknown error");
-      toast.error("Erreur lors de la génération des recettes");
+      toast.error(
+        `Erreur lors de la génération des recettes: ${error.message}`,
+      );
     } finally {
       setRecipeLoading(false);
       clearInterval(smoothProgressInterval);
@@ -217,11 +278,12 @@ export default function Home() {
           <div className="text-center space-y-6 sm:space-y-8 fade-in-up">
             <div className="space-y-3 sm:space-y-4">
               <h1 className="heading-xl gradient-text px-4">
-                Générez des recettes magiques avec l&apos;IA
+                Votre Assistant Culinaire Magique
               </h1>
               <p className="text-body text-base sm:text-lg max-w-3xl mx-auto px-4">
-                Sélectionnez vos ingrédients et laissez notre IA créer des
-                recettes personnalisées, créatives et délicieuses pour vous.
+                Donnez-moi vos ingrédients, et je transformerai votre cuisine en
+                une aventure gastronomique. Des recettes sur mesure, rien que
+                pour vous.
               </p>
             </div>
           </div>
@@ -230,16 +292,14 @@ export default function Home() {
             <Card className="modern-card max-w-4xl mx-auto">
               <CardHeader className="text-center pb-6 sm:pb-8">
                 <CardTitle className="heading-md flex items-center justify-center gap-2 sm:gap-3">
-                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-600">
-                    <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-emerald-600">
+                    <FaMagic className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
-                  <span className="text-lg sm:text-xl">
-                    Générer une recette
-                  </span>
+                  <span className="text-lg sm:text-xl">Créer une recette</span>
                 </CardTitle>
                 <CardDescription className="text-body text-base sm:text-lg">
-                  Sélectionnez vos ingrédients et préférences pour créer des
-                  recettes personnalisées
+                  Composez votre plat idéal en sélectionnant vos ingrédients et
+                  préférences.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 sm:space-y-8">
@@ -248,104 +308,141 @@ export default function Home() {
                     htmlFor="ingredients"
                     className="text-base font-semibold text-slate-900"
                   >
-                    🥕 Ingrédients disponibles
+                    Quels ingrédients avez-vous sous la main ?
                   </Label>
-                  {loading ? (
-                    <div className="space-y-3">
-                      <Skeleton className="h-12 w-full rounded-lg" />
-                      <Skeleton className="h-12 w-full rounded-lg" />
-                      <Skeleton className="h-12 w-3/4 rounded-lg" />
-                    </div>
-                  ) : (
-                    <MultiSelect
-                      options={ingredientOptions}
-                      onValueChange={setSelectedIngredients}
-                      onAddAndSelectOption={handleAddAndSelectIngredientOption}
-                      placeholder="Sélectionnez vos ingrédients..."
-                      maxCount={50}
+                  <div className="flex gap-2">
+                    <Input
+                      id="ingredients"
+                      placeholder="Rechercher ou ajouter un ingrédient..."
+                      value={ingredientSearch}
+                      onChange={(e) => setIngredientSearch(e.target.value)}
                     />
-                  )}
+                    <Button onClick={handleAddNewIngredient}>
+                      <FaPlus />
+                    </Button>
+                  </div>
+                  <div className="flex justify-end mt-2">
+                    <Button variant="link" onClick={handleSelectAllIngredients}>
+                      {selectedIngredients.length === ingredientOptions.length
+                        ? "Tout désélectionner"
+                        : "Tout sélectionner"}
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {filteredIngredients.map((option) => (
+                      <Badge
+                        key={option.value}
+                        variant={
+                          selectedIngredients.includes(option.value)
+                            ? "default"
+                            : "outline"
+                        }
+                        onClick={() => handleToggleIngredient(option.value)}
+                        className="cursor-pointer"
+                      >
+                        {option.label}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator />
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="intolerances"
+                    className="text-base font-semibold text-slate-900"
+                  >
+                    Avez-vous des restrictions alimentaires ?
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="intolerances"
+                      placeholder="Rechercher ou ajouter une intolérance..."
+                      value={intoleranceSearch}
+                      onChange={(e) => setIntoleranceSearch(e.target.value)}
+                    />
+                    <Button onClick={handleAddNewIntolerance}>
+                      <FaPlus />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {filteredIntolerances.map((option) => (
+                      <Badge
+                        key={option.value}
+                        variant={
+                          selectedIntolerances.includes(option.value)
+                            ? "default"
+                            : "outline"
+                        }
+                        onClick={() => handleToggleIntolerance(option.value)}
+                        className="cursor-pointer"
+                      >
+                        {option.label}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
 
                 <Separator />
 
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="serving"
-                    className="text-base font-semibold text-slate-900"
-                  >
-                    👥 Nombre de portions
-                  </Label>
-                  <Input
-                    id="serving"
-                    type="number"
-                    min={1}
-                    max={100}
-                    value={serving}
-                    onChange={(e) => setServing(Number(e.target.value))}
-                    placeholder="Nombre de portions"
-                    className="input-modern text-center h-12 text-lg"
-                  />
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="serving"
+                      className="text-base font-semibold text-slate-900"
+                    >
+                      👥 Pour combien de personnes ?
+                    </Label>
+                    <Input
+                      id="serving"
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={serving}
+                      onChange={(e) => setServing(Number(e.target.value))}
+                      placeholder="Nombre de convives"
+                      className="input-modern text-center h-12 text-lg"
+                    />
+                  </div>
 
-                <div className="space-y-3">
-                  <Label className="text-base font-semibold text-slate-900">
-                    ⚠️ Intolérances alimentaires
-                  </Label>
-                  <MultiSelect
-                    options={INTOLERANCES}
-                    value={intolerances}
-                    onValueChange={setIntolerances}
-                    placeholder="Sélectionnez vos intolérances (optionnel)"
-                    maxCount={10}
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="genre"
-                    className="text-base font-semibold text-slate-900"
-                  >
-                    🍽️ Genre de recette
-                  </Label>
-                  <Input
-                    id="genre"
-                    value={genre}
-                    onChange={(e) => setGenre(e.target.value)}
-                    placeholder="Exemple : dessert, plat principal..."
-                    className="input-modern h-12"
-                  />
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="genre"
+                      className="text-base font-semibold text-slate-900"
+                    >
+                      🍽️ Type de plat
+                    </Label>
+                    <Input
+                      id="genre"
+                      value={genre}
+                      onChange={(e) => setGenre(e.target.value)}
+                      placeholder="Ex: Entrée, Plat végétarien, Dessert rapide..."
+                      className="input-modern h-12"
+                    />
+                  </div>
                 </div>
 
                 <Separator />
 
-                <Button
-                  onClick={handleGenerateRecipe}
-                  disabled={selectedIngredients.length === 0 || recipeLoading}
-                  className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold gradient-bg-ai hover:opacity-90 transition-all duration-300 ai-pulse rounded-xl"
-                >
-                  {recipeLoading ? (
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
-                      Génération en cours...
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
-                      Générer mes recettes
-                    </div>
-                  )}
-                </Button>
+                <div className="flex justify-center pt-6">
+                  <Button
+                    onClick={handleGenerateRecipe}
+                    disabled={recipeLoading || selectedIngredients.length === 0}
+                    className="btn-primary w-full sm:w-auto text-lg px-8 py-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+                  >
+                    <FaMagic className="h-5 w-5 mr-3" />
+                    {recipeLoading
+                      ? "Génération en cours..."
+                      : "Trouver des idées de recettes"}
+                  </Button>
+                </div>
 
                 {recipeLoading && (
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-sm text-slate-600">
-                      <span className="text-xs sm:text-sm">
-                        {progressMessage}
-                      </span>
-                      <span className="text-xs sm:text-sm">{progress}%</span>
-                    </div>
-                    <Progress value={progress} className="h-2 bg-slate-200" />
+                  <div className="pt-8">
+                    <p className="text-center font-semibold text-lg text-primary mb-4">
+                      {progressMessage}
+                    </p>
+                    <Progress value={progress} className="w-full" />
                   </div>
                 )}
 
@@ -358,83 +455,31 @@ export default function Home() {
             </Card>
           </div>
 
-          <div className="scale-in">
-            {recipeLoading && (
-              <Card className="modern-card max-w-4xl mx-auto">
-                <CardContent className="pt-8 sm:pt-12 pb-8 sm:pb-12">
-                  <div className="flex items-center justify-center">
-                    <LoadingSpinner
-                      size="lg"
-                      text="L'IA cuisine pour vous..."
-                      showProgress={true}
-                      progress={progress}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+          {recipeError && (
+            <div className="max-w-4xl mx-auto pt-8 text-center">
+              <p className="text-red-600 font-semibold text-lg">
+                Erreur de génération
+              </p>
+              <p className="text-muted-foreground">{recipeError}</p>
+              <Button
+                variant="outline"
+                onClick={handleGenerateRecipe}
+                className="mt-4"
+              >
+                Réessayer
+              </Button>
+            </div>
+          )}
 
-            {recipes.length > 0 && !recipeError && (
-              <div className="space-y-6 sm:space-y-8 fade-in-up">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h2 className="heading-lg gradient-text">
-                      🎉 Vos recettes générées
-                    </h2>
-                    <p className="text-body">
-                      Découvrez vos recettes personnalisées créées par l&apos;IA
-                    </p>
-                  </div>
-                  <Button
-                    onClick={handleGenerateRecipe}
-                    size="sm"
-                    variant="outline"
-                    className="btn-secondary w-full sm:w-auto"
-                  >
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Régénérer
-                  </Button>
-                </div>
-                <div className="space-y-6 sm:space-y-8">
-                  {recipes.map((recipe, idx) => (
-                    <div
-                      key={idx}
-                      className="fade-in-up"
-                      style={{ animationDelay: `${idx * 0.1}s` }}
-                    >
-                      <RecipeCard
-                        recipe={recipe}
-                        showSaveButton={true}
-                        showDeleteButton={false}
-                        isClickable={false}
-                        onRecipeSaved={() => handleRecipeSaved(idx)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {!recipeLoading && recipes.length === 0 && !recipeError && (
-              <Card className="modern-card max-w-4xl mx-auto">
-                <CardContent className="pt-12 sm:pt-16 pb-12 sm:pb-16">
-                  <div className="text-center space-y-6">
-                    <div className="ai-float">
-                      <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-gradient-to-r from-purple-100 to-pink-100 mx-auto">
-                        <span className="text-3xl sm:text-4xl">🍽️</span>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <h3 className="heading-md">Prêt à cuisiner ?</h3>
-                      <p className="text-body px-4">
-                        Sélectionnez vos ingrédients et cliquez sur
-                        &quot;Générer mes recettes&quot; pour commencer
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {recipes.map((recipe, index) => (
+              <RecipeCard
+                key={index}
+                recipe={recipe}
+                onRecipeSaved={() => handleRecipeSaved(index)}
+                showSaveButton={true}
+              />
+            ))}
           </div>
         </div>
       </main>
