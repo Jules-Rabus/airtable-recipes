@@ -32,13 +32,15 @@ export const generateRecipes = async (payload: {
   genre?: string;
 }): Promise<RecipeType[]> => {
   const { ingredients, intolerances, serving = 1, genre } = payload;
-  const ingredientListJson = JSON.stringify(ingredients);
+  const ingredientListString = ingredients.map(ingredient => ingredient.name).join(", ");
+  const intoleranceListString = intolerances.length > 0 ? intolerances.join(", ") : "aucune";
+
   const typeInfo = genre ? ` de type ${genre}` : "";
   const prompt = `
     Crée 3-10 recettes délicieuses${typeInfo} en utilisant UNIQUEMENT les ingrédients alimentaires fournis.
 
     NOMBRE DE RECETTES :
-    - Génère 3 recettes minimum
+    - Génère 3 recettes minimum sauf si les intolérances alimentaires rendent cela impossible
     - Génère jusqu'à 10 recettes maximum
     - Adapte le nombre selon la créativité possible avec les ingrédients
     - Plus d'ingrédients = plus de recettes possibles
@@ -49,13 +51,20 @@ export const generateRecipes = async (payload: {
     - N'utilise que les fruits, légumes, viandes, poissons, céréales, épices, produits laitiers, etc.
     - Si un ingrédient n'est pas comestible, ne l'utilise PAS dans tes recettes
 
+    ⚠️ INTOLÉRANCES ALIMENTAIRES - RESPECT OBLIGATOIRE :
+    - Intolérances à éviter : ${intoleranceListString}
+    - Ne crée AUCUNE recette contenant des ingrédients liés aux intolérances
+    - Vérifie chaque ingrédient utilisé contre la liste des intolérances
+    - Si un ingrédient peut provoquer une intolérance, ne l'utilise PAS
+    - Si trop d'ingrédients sont éliminés à cause des intolérances, génère moins de recettes mais respecte les contraintes
+
     CONTRAINTES STRICTES :
-    - Utilise UNIQUEMENT les ingrédients alimentaires fournis
+    - Utilise UNIQUEMENT les ingrédients alimentaires fournis : ${ingredientListString}
     - N'ajoute AUCUN ingrédient supplémentaire
-    - Respecte les intolérances : ${Array.isArray(intolerances) && intolerances.length > 0 ? intolerances.map((i) => (typeof i === "object" && i !== null && "name" in i ? (i as { name: string }).name : i)).join(", ") : "aucune"}
+    - Respecte absolument les intolérances : ${intoleranceListString}
     - Portions : ${serving} personne(s) par recette
 
-    INGRÉDIENTS DISPONIBLES : ${ingredientListJson}
+    INGRÉDIENTS DISPONIBLES : ${ingredientListString}
 
     RÈGLES DE CRÉATION :
     1. Utilise SEULEMENT des ingrédients comestibles/alimentaires
@@ -68,6 +77,7 @@ export const generateRecipes = async (payload: {
        - Exemple : si 1 portion = 100g, alors ${serving} portions = ${serving * 100}g
        - Utilise des quantités réalistes et précises pour ${serving} personne(s)
     7. Créativité : Plus il y a d'ingrédients, plus tu peux être créatif et proposer de recettes
+    8. ⚠️ VÉRIFICATION FINALE : Avant de finaliser chaque recette, vérifie qu'aucun ingrédient ne contient ou n'est lié aux intolérances mentionnées
   `;
 
   const systemPrompt = `Tu es un chef culinaire français expert. Tu dois TOUJOURS répondre en français.
@@ -131,6 +141,11 @@ export const generateRecipes = async (payload: {
     prompt,
     schema: z.object({ recipes: z.array(recipeSchema) }),
   });
+
+  if (object.recipes.length === 0) {
+    throw new Error("Aucune recette ne peut être générée avec les ingrédients fournis en tenant compte de vos intolérances alimentaires. Veuillez modifier vos ingrédients ou réduire vos restrictions.");
+  }
+
   return object.recipes;
 };
 
