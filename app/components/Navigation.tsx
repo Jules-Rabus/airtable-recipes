@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChefHat, BookOpen, Sparkles, Menu, X } from "lucide-react";
+import {
+  FaBookOpen,
+  FaMagic,
+  FaBars,
+  FaTimes,
+  FaBook,
+  FaCarrot,
+} from "react-icons/fa";
 import { useState } from "react";
 
 export function Navigation() {
@@ -15,11 +22,11 @@ export function Navigation() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 hover-scale">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-pink-600">
-              <ChefHat className="h-5 w-5 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-teal-500">
+              <FaBook className="h-5 w-5 text-white" />
             </div>
             <span className="text-xl font-bold gradient-text-brand">
-              RecipeAI
+              MonLivreDeRecettes
             </span>
           </Link>
 
@@ -31,7 +38,7 @@ export function Navigation() {
                 pathname === "/" ? "nav-link-active" : ""
               }`}
             >
-              <Sparkles className="h-4 w-4" />
+              <FaMagic className="h-4 w-4" />
               <span>Générer</span>
             </Link>
             <Link
@@ -40,8 +47,17 @@ export function Navigation() {
                 pathname === "/recipes" ? "nav-link-active" : ""
               }`}
             >
-              <BookOpen className="h-4 w-4" />
+              <FaBookOpen className="h-4 w-4" />
               <span>Mes Recettes</span>
+            </Link>
+            <Link
+              href="/ingredients"
+              className={`nav-link flex items-center space-x-2 transition-all duration-200 ${
+                pathname === "/ingredients" ? "nav-link-active" : ""
+              }`}
+            >
+              <FaCarrot className="h-4 w-4" />
+              <span>Ingrédients</span>
             </Link>
           </div>
 
@@ -53,9 +69,9 @@ export function Navigation() {
               aria-label="Toggle mobile menu"
             >
               {isMobileMenuOpen ? (
-                <X className="h-5 w-5" />
+                <FaTimes className="h-5 w-5" />
               ) : (
-                <Menu className="h-5 w-5" />
+                <FaBars className="h-5 w-5" />
               )}
             </button>
           </div>
@@ -75,7 +91,7 @@ export function Navigation() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <div className="flex items-center space-x-2">
-                  <Sparkles className="h-4 w-4" />
+                  <FaMagic className="h-4 w-4" />
                   <span>Générer</span>
                 </div>
               </Link>
@@ -89,8 +105,22 @@ export function Navigation() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <div className="flex items-center space-x-2">
-                  <BookOpen className="h-4 w-4" />
+                  <FaBookOpen className="h-4 w-4" />
                   <span>Mes Recettes</span>
+                </div>
+              </Link>
+              <Link
+                href="/ingredients"
+                className={`block px-4 py-2 rounded-lg transition-all duration-200 ${
+                  pathname === "/ingredients"
+                    ? "nav-link-active bg-slate-100"
+                    : "nav-link hover:bg-slate-50"
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <div className="flex items-center space-x-2">
+                  <FaCarrot className="h-4 w-4" />
+                  <span>Ingrédients</span>
                 </div>
               </Link>
             </div>

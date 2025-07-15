@@ -168,8 +168,8 @@ export const getRecipes = async (): Promise<RecipeType[]> => {
     title: recipe.fields?.Title ?? "Aucun titre",
     description: recipe.fields?.Description ?? "Aucune description",
     serving: recipe.fields?.Serving ?? 1,
-    preparationTime: recipe.fields?.PrepTimeMinutes ?? 0,
-    cookingTime: recipe.fields?.CookTimeMinutes ?? 0,
+    preparationTime: recipe.fields?.PreparationTime ?? 0,
+    cookingTime: recipe.fields?.CookingTime ?? 0,
     difficulty: recipe.fields?.Difficulty ?? "Inconnu",
     type: recipe.fields?.Type ?? "Inconnu",
     ingredients: ingredientsMap.get(recipe.id)?.map((join) => ({

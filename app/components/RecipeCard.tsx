@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Trash2, Clock, Users, ChefHat, Save, BookOpen } from "lucide-react";
+import {
+  FaTrash,
+  FaClock,
+  FaUsers,
+  FaSave,
+  FaBookOpen,
+  FaUtensils,
+} from "react-icons/fa";
+import { IoRestaurantOutline } from "react-icons/io5";
 import Link from "next/link";
 import {
   Card,
@@ -22,8 +30,8 @@ interface RecipeCardProps {
   onDelete?: (recipeId: string) => void;
   showDeleteButton?: boolean;
   showSaveButton?: boolean;
-  isClickable?: boolean;
   onRecipeSaved?: () => void;
+  className?: string;
 }
 
 export function RecipeCard({
@@ -31,8 +39,8 @@ export function RecipeCard({
   onDelete,
   showDeleteButton = false,
   showSaveButton = true,
-  isClickable = false,
   onRecipeSaved,
+  className,
 }: RecipeCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -80,7 +88,7 @@ export function RecipeCard({
   };
 
   const CardContentComponent = () => (
-    <Card className="modern-card hover-lift transition-all duration-300 overflow-hidden">
+    <Card className="modern-card hover-lift transition-all duration-300 overflow-hidden h-full flex flex-col">
       <CardHeader className="pb-4 sm:pb-6">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex-1">
@@ -93,15 +101,15 @@ export function RecipeCard({
 
             <div className="flex flex-wrap gap-2 mb-4">
               <Badge variant="secondary" className="badge-secondary">
-                <Clock className="w-3 h-3" />
+                <FaClock className="w-3 h-3" />
                 {recipe.preparationTime + recipe.cookingTime} min
               </Badge>
               <Badge variant="secondary" className="badge-secondary">
-                <Users className="w-3 h-3" />
+                <FaUsers className="w-3 h-3" />
                 {recipe.serving} portion{recipe.type ? "s" : ""}
               </Badge>
               <Badge variant="secondary" className="badge-secondary">
-                <ChefHat className="w-3 h-3" />
+                <IoRestaurantOutline className="w-3 h-3" />
                 {recipe.difficulty}
               </Badge>
               <Badge variant="secondary" className="badge-secondary">
@@ -111,6 +119,14 @@ export function RecipeCard({
           </div>
 
           <div className="flex flex-row sm:flex-col gap-2 sm:gap-2 sm:ml-6">
+            <Link href={`/recipes/${recipe.id}`}>
+              <Button size="sm" className="btn-primary flex-1 sm:flex-none">
+                <div className="flex items-center gap-1">
+                  <FaUtensils className="w-3 h-3" />
+                  <span className="text-xs hidden sm:inline">À la cuisine</span>
+                </div>
+              </Button>
+            </Link>
             {showSaveButton && (
               <Button
                 onClick={handleSaveRecipe}
@@ -126,7 +142,7 @@ export function RecipeCard({
                   </div>
                 ) : (
                   <div className="flex items-center gap-1">
-                    <Save className="w-3 h-3" />
+                    <FaSave className="w-3 h-3" />
                     <span className="text-xs hidden sm:inline">
                       Sauvegarder
                     </span>
@@ -150,7 +166,7 @@ export function RecipeCard({
                   </div>
                 ) : (
                   <div className="flex items-center gap-1">
-                    <Trash2 className="w-3 h-3 lucide-trash" />
+                    <FaTrash className="w-3 h-3 lucide-trash" />
                     <span className="text-xs hidden sm:inline">Supprimer</span>
                   </div>
                 )}
@@ -165,13 +181,13 @@ export function RecipeCard({
             >
               {isExpanded ? (
                 <div className="flex items-center gap-1">
-                  <BookOpen className="w-3 h-3" />
-                  <span className="text-xs hidden sm:inline">Hide</span>
+                  <FaBookOpen className="w-3 h-3" />
+                  <span className="text-xs hidden sm:inline">Masquer</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1">
-                  <BookOpen className="w-3 h-3" />
-                  <span className="text-xs hidden sm:inline">Details</span>
+                  <FaBookOpen className="w-3 h-3" />
+                  <span className="text-xs hidden sm:inline">Détails</span>
                 </div>
               )}
             </Button>
@@ -248,231 +264,116 @@ export function RecipeCard({
               )}
             </div>
           </div>
-
-          {showSaveButton && (
-            <div className="flex gap-3 sm:gap-4 mt-6 sm:mt-8 pt-6 sm:pt-8 border-t">
-              <Button
-                onClick={handleSaveRecipe}
-                className="flex-1 btn-primary"
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Sauvegarde en cours...
-                  </div>
-                ) : (
-                  "💾 Sauvegarder la recette"
-                )}
-              </Button>
-            </div>
-          )}
         </CardContent>
       )}
     </Card>
   );
 
-  if (isClickable) {
-    return (
-      <div className="relative">
-        <Link href={`/recipes/${recipe.id}`} className="block">
-          <div className="cursor-pointer">
-            <Card className="modern-card hover-lift transition-all duration-300 overflow-hidden">
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl font-bold gradient-text mb-2">
-                      {recipe.title}
-                    </CardTitle>
-                    <CardDescription className="text-sm text-muted-foreground mb-3">
-                      {recipe.description}
-                    </CardDescription>
-
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <Badge
-                        variant="secondary"
-                        className="flex items-center gap-1"
-                      >
-                        <Clock className="w-3 h-3" />
-                        {recipe.preparationTime + recipe.cookingTime} min
-                      </Badge>
-                      <Badge
-                        variant="secondary"
-                        className="flex items-center gap-1"
-                      >
-                        <Users className="w-3 h-3" />
-                        {recipe.serving} portion{recipe.serving > 1 ? "s" : ""}
-                      </Badge>
-                      <Badge
-                        variant="secondary"
-                        className="flex items-center gap-1"
-                      >
-                        <ChefHat className="w-3 h-3" />
-                        {recipe.difficulty}
-                      </Badge>
-                      <Badge variant="secondary">{recipe.type}</Badge>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          </div>
-        </Link>
-
-        <div className="absolute top-4 right-4 flex flex-col gap-2">
+  const MobileCardComponent = () => (
+    <div className="bg-white rounded-lg shadow-md overflow-hidden p-4">
+      <div className="flex justify-between items-start">
+        <h3 className="text-lg font-bold text-slate-800">{recipe.title}</h3>
+        <div className="flex gap-2">
           {showSaveButton && (
-            <Button
-              onClick={handleSaveRecipe}
-              size="sm"
-              variant="outline"
-              className="hover-lift bg-white/90 backdrop-blur-sm"
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
-                  Sauvegarde...
-                </div>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <Save className="w-3 h-3" />
-                  <span className="text-xs">Sauvegarder</span>
-                </div>
-              )}
+            <Button onClick={handleSaveRecipe} size="icon" variant="ghost">
+              <FaSave className="w-4 h-4" />
             </Button>
           )}
-
           {showDeleteButton && onDelete && (
             <Button
               onClick={handleDeleteRecipe}
-              size="sm"
+              size="icon"
               variant="ghost"
-              className="hover-lift text-muted-foreground hover:text-red-600 transition-colors bg-white/90 backdrop-blur-sm"
-              disabled={isDeleting}
+              className="text-red-500 hover:text-red-700"
             >
-              {isDeleting ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
-                  Suppression...
-                </div>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <Trash2 className="w-3 h-3 lucide-trash" />
-                  <span className="text-xs">Supprimer</span>
-                </div>
-              )}
+              <FaTrash className="w-4 h-4" />
             </Button>
           )}
-
-          <Button
-            onClick={() => setIsExpanded(!isExpanded)}
-            size="sm"
-            variant="ghost"
-            className="hover-lift bg-white/90 backdrop-blur-sm"
-          >
-            {isExpanded ? (
-              <div className="flex items-center gap-1">
-                <BookOpen className="w-3 h-3" />
-                <span className="text-xs">Hide</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1">
-                <BookOpen className="w-3 h-3" />
-                <span className="text-xs">Details</span>
-              </div>
-            )}
-          </Button>
         </div>
-
-        {isExpanded && (
-          <Card className="modern-card mt-4">
-            <CardContent className="pt-6">
-              <Separator className="mb-6" />
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">🥕</span>
-                  <h3 className="text-lg font-semibold">Ingrédients</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {recipe.ingredients && recipe.ingredients.length > 0 ? (
-                    recipe.ingredients.map((ingredient, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg hover-lift"
-                      >
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <span className="font-medium">{ingredient.name}</span>
-                        {ingredient.quantity && (
-                          <span className="text-sm text-muted-foreground">
-                            {ingredient.quantity} {ingredient.unit}
-                          </span>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="col-span-2 text-center py-4 text-muted-foreground">
-                      Aucun ingrédient disponible
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <Separator className="my-6" />
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">📝</span>
-                  <h3 className="text-lg font-semibold">Instructions</h3>
-                </div>
-                <div className="space-y-4">
-                  {recipe.instructions && recipe.instructions.length > 0 ? (
-                    recipe.instructions.map((instruction, index) => (
-                      <div
-                        key={index}
-                        className="flex gap-4 p-4 bg-muted/30 rounded-lg hover-lift"
-                        style={{ animationDelay: `${index * 0.1}s` }}
-                      >
-                        <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
-                          {index + 1}
-                        </div>
-                        <p className="text-sm leading-relaxed">
-                          {instruction.text}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-4 text-muted-foreground">
-                      Aucune instruction disponible
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {showSaveButton && (
-                <div className="flex gap-3 mt-6 pt-6 border-t">
-                  <Button
-                    onClick={handleSaveRecipe}
-                    className="flex-1 gradient-bg hover:opacity-90"
-                    disabled={isSaving}
-                  >
-                    {isSaving ? (
-                      <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Sauvegarde en cours...
-                      </div>
-                    ) : (
-                      "💾 Sauvegarder la recette"
-                    )}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
       </div>
-    );
-  }
+      <p className="text-sm text-slate-600 mt-1">{recipe.description}</p>
+      <div className="flex flex-wrap gap-2 mt-3">
+        <Badge variant="secondary">
+          <FaClock className="w-3 h-3 mr-1" />
+          {recipe.preparationTime + recipe.cookingTime} min
+        </Badge>
+        <Badge variant="secondary">
+          <FaUsers className="w-3 h-3 mr-1" />
+          {recipe.serving}p
+        </Badge>
+        <Badge variant="secondary">{recipe.difficulty}</Badge>
+        <Badge variant="secondary">{recipe.type}</Badge>
+      </div>
 
-  return <CardContentComponent />;
+      <div className="flex items-center gap-4 mt-3">
+        <Link href={`/recipes/${recipe.id}`}>
+          <Button size="sm" variant="outline">
+            <FaUtensils className="w-3 h-3 mr-2" />À la cuisine
+          </Button>
+        </Link>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="text-sm text-primary"
+        >
+          {isExpanded ? "Voir moins" : "Voir plus"}
+        </button>
+      </div>
+
+      {isExpanded && (
+        <div className="mt-3">
+          <Separator />
+          <div className="mt-3">
+            <div>
+              <h4 className="font-semibold text-slate-800 mb-2">Ingrédients</h4>
+              <ul className="list-disc list-inside space-y-1">
+                {recipe?.ingredients && recipe.ingredients.length > 0 ? (
+                  recipe.ingredients.map((ing, index) => (
+                    <li key={index}>
+                      <span className="text-sm text-slate-700">
+                        {ing.name}
+                        {ing.quantity && ` - ${ing.quantity} ${ing.unit}`}
+                      </span>
+                    </li>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-500">
+                    Aucun ingrédient listé.
+                  </p>
+                )}
+              </ul>
+            </div>
+            <div className="mt-3">
+              <h4 className="font-semibold text-slate-800 mb-2">
+                Instructions
+              </h4>
+              <ol className="list-decimal list-inside space-y-2">
+                {recipe?.instructions && recipe.instructions.length > 0 ? (
+                  recipe.instructions.map((ins, index) => (
+                    <li key={index} className="text-sm text-slate-700">
+                      {ins.text}
+                    </li>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-500">
+                    Aucune instruction disponible.
+                  </p>
+                )}
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className={className}>
+      <div className="hidden md:block h-full">
+        <CardContentComponent />
+      </div>
+      <div className="md:hidden">
+        <MobileCardComponent />
+      </div>
+    </div>
+  );
 }

@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { NutritionCard } from "../../components/NutritionCard";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChefHat, Calendar, ArrowLeft, Trash2 } from "lucide-react";
+import { FaCalendarAlt, FaArrowLeft, FaTrash } from "react-icons/fa";
+import { IoRestaurantOutline } from "react-icons/io5";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -185,7 +186,7 @@ export default function RecipeDetailPage() {
             </p>
             <Link href="/recipes">
               <Button variant="outline">
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <FaArrowLeft className="w-4 h-4 mr-2" />
                 Retour aux recettes
               </Button>
             </Link>
@@ -200,15 +201,9 @@ export default function RecipeDetailPage() {
       <Navigation />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Link href="/recipes">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Retour
-              </Button>
-            </Link>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-3xl font-bold gradient-text">
+              <h1 className="text-2xl sm:text-3xl font-bold gradient-text">
                 {recipe.title}
               </h1>
               {recipe.fields?.Description && (
@@ -217,16 +212,24 @@ export default function RecipeDetailPage() {
                 </p>
               )}
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDeleteRecipe}
-              disabled={isDeleting}
-              className="text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              {isDeleting ? "Suppression..." : "Supprimer la recette"}
-            </Button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Link href="/recipes" className="w-full">
+                <Button variant="ghost" size="sm" className="w-full">
+                  <FaArrowLeft className="w-4 h-4 mr-2" />
+                  Retour
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDeleteRecipe}
+                disabled={isDeleting}
+                className="text-red-600 hover:text-red-700 w-full"
+              >
+                <FaTrash className="w-4 h-4 mr-2" />
+                {isDeleting ? "Suppression..." : "Supprimer"}
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -234,8 +237,8 @@ export default function RecipeDetailPage() {
               <Card className="modern-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <ChefHat className="w-5 h-5" />
-                    Informations de la recette
+                    <IoRestaurantOutline className="w-5 h-5" />
+                    Détails de la recette
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -279,7 +282,7 @@ export default function RecipeDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <span className="text-lg">🥕</span>
-                    Ingrédients
+                    Ce qu&apos;il vous faut
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -308,7 +311,7 @@ export default function RecipeDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <span className="text-lg">📝</span>
-                    Instructions
+                    Les étapes de préparation
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -336,12 +339,12 @@ export default function RecipeDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <span className="text-lg">🥗</span>
-                    Analyse Nutritionnelle
+                    Bilan Nutritionnel
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Découvrez les valeurs nutritionnelles de cette recette
+                    Analysez l&apos;apport nutritionnel de votre plat.
                   </p>
                   <Dialog
                     open={isNutritionModalOpen}
@@ -359,7 +362,7 @@ export default function RecipeDetailPage() {
                             Analyse en cours...
                           </div>
                         ) : (
-                          "🔬 Analyser la nutrition"
+                          "🔬 Lancer l'analyse"
                         )}
                       </Button>
                     </DialogTrigger>
@@ -372,7 +375,7 @@ export default function RecipeDetailPage() {
                             </div>
                             <div className="space-y-2">
                               <h3 className="text-base sm:text-lg font-semibold">
-                                Analyse nutritionnelle en cours
+                                Analyse en cours...
                               </h3>
                               <p className="text-xs text-muted-foreground">
                                 {nutritionProgressMessage}
@@ -400,7 +403,8 @@ export default function RecipeDetailPage() {
                       ) : (
                         <div className="text-center py-6 sm:py-8">
                           <p className="text-xs text-muted-foreground">
-                            Aucune donnée nutritionnelle disponible
+                            L&apos;analyse nutritionnelle n&apos;a pas pu être
+                            effectuée.
                           </p>
                         </div>
                       )}
@@ -412,14 +416,14 @@ export default function RecipeDetailPage() {
               <Card className="modern-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    Métadonnées
+                    <FaCalendarAlt className="w-5 h-5" />
+                    Informations
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">
-                      Créée le
+                      Date de création
                     </span>
                     <span className="text-sm font-medium">
                       {recipe.created_at
@@ -430,7 +434,9 @@ export default function RecipeDetailPage() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">ID</span>
+                    <span className="text-sm text-muted-foreground">
+                      Identifiant unique
+                    </span>
                     <span className="text-sm font-mono">{recipe.id}</span>
                   </div>
                 </CardContent>

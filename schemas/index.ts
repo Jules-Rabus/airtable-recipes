@@ -24,8 +24,8 @@ export const recipeRecordSchema = airtableRecordSchema.extend({
       Title: z.string().optional(),
       Description: z.string().optional(),
       Serving: z.number().optional(),
-      PrepTimeMinutes: z.number().optional(),
-      CookTimeMinutes: z.number().optional(),
+      PreparationTime: z.number().optional(),
+      CookingTime: z.number().optional(),
       Difficulty: z.string().optional(),
       Type: z.string().optional(),
     })
@@ -37,6 +37,23 @@ export const ingredientRecordSchema = airtableRecordSchema.extend({
   fields: z.object({ Name: z.string().optional() }).optional(),
 });
 export type IngredientRecord = z.infer<typeof ingredientRecordSchema>;
+
+export const createIngredientSchema = z.object({
+  name: z.string({ required_error: "Le nom de l'ingrédient est requis." }),
+});
+export type CreateIngredient = z.infer<typeof createIngredientSchema>;
+
+export const updateIngredientSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+});
+export type UpdateIngredient = z.infer<typeof updateIngredientSchema>;
+
+export const ingredientSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+export type Ingredient = z.infer<typeof ingredientSchema>;
 
 export const joinRecordSchema = airtableRecordSchema.extend({
   fields: z

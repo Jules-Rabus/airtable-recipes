@@ -3,12 +3,12 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import {
-  CheckIcon,
-  XCircle,
-  ChevronDown,
-  XIcon,
-  WandSparkles,
-} from "lucide-react";
+  FaCheck,
+  FaTimesCircle,
+  FaChevronDown,
+  FaTimes,
+  FaMagic,
+} from "react-icons/fa";
 
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -159,7 +159,7 @@ export const MultiSelect = React.forwardRef<
       () => defaultValue,
     );
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
-    const [isAnimating, setIsAnimating] = React.useState(false);
+    const [isAnimating] = React.useState(false);
 
     const handleInputKeyDown = (
       event: React.KeyboardEvent<HTMLInputElement>,
@@ -248,7 +248,7 @@ export const MultiSelect = React.forwardRef<
             {...props}
             onClick={handleTogglePopover}
             className={cn(
-              "flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto",
+              "flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit",
               className,
             )}
           >
@@ -262,19 +262,22 @@ export const MultiSelect = React.forwardRef<
                       <Badge
                         key={value}
                         className={cn(
-                          isAnimating ? "animate-bounce" : "",
-                          multiSelectVariants({ variant }),
+                          multiSelectVariants({ variant, className }),
                         )}
-                        style={{ animationDuration: `${animation}s` }}
+                        style={{
+                          animation: isAnimating
+                            ? `bounce 0.5s ease-in-out ${animation}s`
+                            : "none",
+                        }}
                       >
                         {IconComponent && (
                           <IconComponent className="h-4 w-4 mr-2" />
                         )}
                         {option?.label}
-                        <XCircle
+                        <FaTimesCircle
                           className="ml-2 h-4 w-4 cursor-pointer"
-                          onClick={(event) => {
-                            event.stopPropagation();
+                          onClick={(event: React.MouseEvent) => {
+                            event.preventDefault();
                             toggleOption(value);
                           }}
                         />
@@ -284,17 +287,15 @@ export const MultiSelect = React.forwardRef<
                   {selectedValues.length > maxCount && (
                     <Badge
                       className={cn(
-                        "bg-transparent text-foreground border-foreground/1 hover:bg-transparent",
-                        isAnimating ? "animate-bounce" : "",
-                        multiSelectVariants({ variant }),
+                        "bg-transparent text-foreground border-foreground/10 hover:bg-transparent",
+                        multiSelectVariants({ variant, className }),
                       )}
-                      style={{ animationDuration: `${animation}s` }}
                     >
-                      {`+ ${selectedValues.length - maxCount} more`}
-                      <XCircle
+                      +{selectedValues.length - maxCount}
+                      <FaTimesCircle
                         className="ml-2 h-4 w-4 cursor-pointer"
-                        onClick={(event) => {
-                          event.stopPropagation();
+                        onClick={(event: React.MouseEvent) => {
+                          event.preventDefault();
                           clearExtraOptions();
                         }}
                       />
@@ -302,18 +303,15 @@ export const MultiSelect = React.forwardRef<
                   )}
                 </div>
                 <div className="flex items-center justify-between">
-                  <XIcon
-                    className="h-4 mx-2 cursor-pointer text-muted-foreground"
-                    onClick={(event) => {
-                      event.stopPropagation();
+                  <FaTimes
+                    className="h-4 w-4 cursor-pointer"
+                    onClick={(event: React.MouseEvent) => {
+                      event.preventDefault();
                       handleClear();
                     }}
                   />
-                  <Separator
-                    orientation="vertical"
-                    className="flex min-h-6 h-full"
-                  />
-                  <ChevronDown className="h-4 mx-2 cursor-pointer text-muted-foreground" />
+                  <Separator orientation="vertical" className="mx-2 h-4" />
+                  <FaChevronDown className="h-4 w-4 cursor-pointer" />
                 </div>
               </div>
             ) : (
@@ -321,69 +319,56 @@ export const MultiSelect = React.forwardRef<
                 <span className="text-sm text-muted-foreground mx-3">
                   {placeholder}
                 </span>
-                <ChevronDown className="h-4 cursor-pointer text-muted-foreground mx-2" />
+                <FaChevronDown className="h-4 w-4 mx-4" />
               </div>
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent
-          className="w-auto p-0"
-          align="start"
-          onEscapeKeyDown={() => setIsPopoverOpen(false)}
-        >
-          <div className="flex items-center gap-2 p-2 border-b">
-            <input
-              type="text"
-              className="flex-1 px-2 py-1 border rounded text-sm"
-              placeholder="Add option..."
-              value={newOptionValue}
-              onChange={(e) => setNewOptionValue(e.target.value)}
-              onKeyDown={handleAddOptionKeyDown}
-            />
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              onClick={handleAddOption}
-              disabled={
-                !newOptionValue.trim() ||
-                options.some((opt) => opt.value === newOptionValue.trim())
-              }
-            >
-              Add
-            </Button>
-          </div>
+        <PopoverContent className="w-auto p-0" align="start">
           <Command>
             <CommandInput
-              placeholder="Search..."
+              placeholder="Select..."
+              value={newOptionValue}
+              onValueChange={setNewOptionValue}
               onKeyDown={handleInputKeyDown}
             />
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandEmpty>
+                <div className="p-2 space-y-2">
+                  <p className="text-sm text-center">No results found.</p>
+                  {(onAddOption || onAddAndSelectOption) && (
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={newOptionValue}
+                        onChange={(e) => setNewOptionValue(e.target.value)}
+                        onKeyDown={handleAddOptionKeyDown}
+                        className="flex-1 w-full px-2 py-1 text-sm border rounded-md"
+                        placeholder="Add new option..."
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleAddOption}
+                      >
+                        <FaMagic className="w-4 h-4 mr-2" />
+                        Add
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CommandEmpty>
               <CommandGroup>
-                <CommandItem
-                  key="all"
-                  onSelect={toggleAll}
-                  className="cursor-pointer"
-                >
-                  <div
-                    className={cn(
-                      "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                      selectedValues.length === options.length
-                        ? "bg-primary text-primary-foreground"
-                        : "opacity-50 [&_svg]:invisible",
-                    )}
-                  >
-                    <CheckIcon className="h-4 w-4" />
-                  </div>
-                  <span>(Select All)</span>
-                </CommandItem>
                 {options.map((option) => {
                   const isSelected = selectedValues.includes(option.value);
                   return (
                     <CommandItem
                       key={option.value}
                       onSelect={() => toggleOption(option.value)}
+                      style={{
+                        pointerEvents: "auto",
+                        opacity: 1,
+                      }}
                       className="cursor-pointer"
                     >
                       <div
@@ -394,7 +379,7 @@ export const MultiSelect = React.forwardRef<
                             : "opacity-50 [&_svg]:invisible",
                         )}
                       >
-                        <CheckIcon className="h-4 w-4" />
+                        <FaCheck className="h-4 w-4" />
                       </div>
                       {option.icon && (
                         <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -406,41 +391,30 @@ export const MultiSelect = React.forwardRef<
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup>
-                <div className="flex items-center justify-between">
-                  {selectedValues.length > 0 && (
-                    <>
-                      <CommandItem
-                        onSelect={handleClear}
-                        className="flex-1 justify-center cursor-pointer"
-                      >
-                        Clear
-                      </CommandItem>
-                      <Separator
-                        orientation="vertical"
-                        className="flex min-h-6 h-full"
-                      />
-                    </>
-                  )}
-                  <CommandItem
-                    onSelect={() => setIsPopoverOpen(false)}
-                    className="flex-1 justify-center cursor-pointer max-w-full"
+                <CommandItem
+                  onSelect={toggleAll}
+                  style={{
+                    pointerEvents: "auto",
+                    opacity: 1,
+                  }}
+                  className="cursor-pointer"
+                >
+                  <div
+                    className={cn(
+                      "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                      selectedValues.length === options.length
+                        ? "bg-primary text-primary-foreground"
+                        : "opacity-50 [&_svg]:invisible",
+                    )}
                   >
-                    Close
-                  </CommandItem>
-                </div>
+                    <FaCheck className="h-4 w-4" />
+                  </div>
+                  <span>Toggle All</span>
+                </CommandItem>
               </CommandGroup>
             </CommandList>
           </Command>
         </PopoverContent>
-        {animation > 0 && selectedValues.length > 0 && (
-          <WandSparkles
-            className={cn(
-              "cursor-pointer my-2 text-foreground bg-background w-3 h-3",
-              isAnimating ? "" : "text-muted-foreground",
-            )}
-            onClick={() => setIsAnimating(!isAnimating)}
-          />
-        )}
       </Popover>
     );
   },
